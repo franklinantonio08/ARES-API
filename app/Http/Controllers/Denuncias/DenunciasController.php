@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Denuncias;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Denuncias;
+use App\Models\RIDMigrantes;
+use App\Models\User;
 
 
 class DenunciasController extends Controller
@@ -35,18 +37,37 @@ class DenunciasController extends Controller
 
     }
 
-    public function show($id){
+    public function show(Request $request){
+
+        $id = $request->input('id');
 
         return Denuncias::find($id);
     }
 
-    public function update(Request $request, $id){
+    public function update(Request $request){
         
-        $denuncias = Denuncias::find($id);
+        // $denuncias = Denuncias::find($id);
         
-        $denuncias->update($request->all());
+        // $denuncias->update($request->all());
 
-        return $denuncias;
+        // return $denuncias;
+        $username = $request->input('username');
+        $codigo = $request->input('codigo');
+
+        $user = User::where('username', $username)->first();
+
+        // Check if the user exists
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+    
+        // Update the user with the new data from the request
+        $user->codigo = $codigo;
+        $user->save();
+    
+        // Return the updated user
+        return response()->json($user);
+
     }
 
     public function destroy($id){
@@ -61,4 +82,61 @@ class DenunciasController extends Controller
         //return Denuncias::destroy($id);
 
     }
+
+    public function consultaCodigo(Request $request) {
+
+        $username = $request->input('username');
+
+        // Buscar al usuario por username
+        $user = User::where('username', $username)->first();
+
+        // Verificar si el usuario existe
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        // Buscar la denuncia asociada al usuario
+        $denuncia = Denuncias::where('user', $username)->first();
+
+        // Verificar si se encontró la denuncia
+        if (!$denuncia) {
+            return response()->json(['message' => 'Denuncia not found'], 404);
+        }
+
+        // Obtener el campo 'estacionamiento' de la denuncia
+        $estacionamiento = $denuncia->estacionamiento;
+
+        // Retornar el valor del campo 'estacionamiento'
+        return response()->json(['estacionamiento' => $estacionamiento]);
+
+    }
+
+   public function migrateData( Request $request) {
+    
+
+        $request->validate([
+            'nombre' => 'required',
+            'apellido' => 'required',
+            'fechaNacimiento' => 'required',
+            'codigo' => 'required',
+            'documento' => 'required',
+            'regionId' => 'required',
+            'paisId' => 'required',
+            'nacionalidadId' => 'required',
+            'genero' => 'required',
+            'tipo' => 'required',
+            'puestoId' => 'required',
+            'afinidadId' => 'required',
+            //'infoextra' => 'required',
+            //'estatus' => 'required',
+            //'usuarioId' => 'required',
+        ]);
+
+        return RIDMigrantes::create($request->all());
+
+    
+
+    
+   }
+
 }

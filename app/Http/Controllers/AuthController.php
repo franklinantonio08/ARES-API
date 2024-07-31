@@ -15,6 +15,8 @@ class AuthController extends Controller
 
         $fields = $request->validate([
             'name' => 'required|string',
+            'codigo' => 'required|integer',
+            'username' => 'required|string',
             'email' => 'required|string|unique:users,email',
             'password' => 'required|string|confirmed'            
         ]);
@@ -22,6 +24,8 @@ class AuthController extends Controller
         $user = User::create([
 
             'name' => $fields['name'],
+            'codigo' => $fields['codigo'],
+            'username' => $fields['username'],
             'email' => $fields['email'],
             'password' => bcrypt($fields['password'])
             
@@ -31,6 +35,7 @@ class AuthController extends Controller
 
         $response = [
             'user' => $user,
+            //'codigo' => $codigo,
             'token' => $token
         ];
 
@@ -41,11 +46,11 @@ class AuthController extends Controller
     public function login(Request $request){
 
         $fields = $request->validate([
-            'email' => 'required|string',
+            'username' => 'required|string',
             'password' => 'required|string'            
         ]);
 
-        $user = User::where('email', $fields['email'])->first();
+        $user = User::where('username', $fields['username'])->first();
 
         if(!$user || !Hash::check($fields['password'], $user->password)){
             return responde([

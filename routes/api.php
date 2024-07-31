@@ -22,16 +22,24 @@ use App\Http\Controllers\AuthController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/denuncias', [DenunciasController::class, 'index']);
-Route::get('/denuncias/{id}', [DenunciasController::class, 'show']);
+
 Route::get('/denuncias/search/{establecimiento}', [DenunciasController::class, 'search']);
 
 
 // Protected Routes
 Route::group(['middleware'=>['auth:sanctum']], function () {   
-    Route::post('/denuncias', [DenunciasController::class, 'store']);
+
+    Route::post('/denuncias/id', [DenunciasController::class, 'show']);
+
+    Route::post('/denuncias', [DenunciasController::class, 'store']);    
     Route::put('/denuncias/{id}', [DenunciasController::class, 'update']);
     Route::delete('/denuncias/{id}', [DenunciasController::class, 'destroy']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::post('/denuncias/consultaCodigo', [DenunciasController::class, 'consultaCodigo']);    
+
+    Route::post('/denuncias/migrateData', [DenunciasController::class, 'migrateData']);    
+
 });
 
 
