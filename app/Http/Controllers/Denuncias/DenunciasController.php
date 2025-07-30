@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Denuncias;
 use App\Models\RIDMigrantes;
+use App\Models\RIDFamilia;
 use App\Models\User;
 
 
@@ -111,12 +112,11 @@ class DenunciasController extends Controller
 
     }
 
-   public function migrateData( Request $request) {
-    
+   public function migrateData( Request $request) {    
 
         $request->validate([
-            'nombre' => 'required',
-            'apellido' => 'required',
+            'primerNombre' => 'required',
+            'primerApellido' => 'required',
             'fechaNacimiento' => 'required',
             'codigo' => 'required',
             'documento' => 'required',
@@ -125,18 +125,29 @@ class DenunciasController extends Controller
             'nacionalidadId' => 'required',
             'genero' => 'required',
             'tipo' => 'required',
-            'puestoId' => 'required',
+            'tipoubicacionId' => 'required',
+            'ubicacionId' => 'required',
             'afinidadId' => 'required',
-            //'infoextra' => 'required',
+         
             //'estatus' => 'required',
             //'usuarioId' => 'required',
         ]);
 
         return RIDMigrantes::create($request->all());
-
-    
-
-    
+        
    }
+
+   public function migrateDataFamilia( Request $request) {    
+
+    $request->validate([
+        'id' => 'required',
+        'codigo' => 'required', 
+        //'estatus' => 'required',
+        //'usuarioId' => 'required',
+    ]);
+
+    return RIDFamilia::create($request->all());
+    
+}
 
 }

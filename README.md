@@ -1,63 +1,99 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+/* Elimina la carpeta del Proyecto Apolo */ 
+rm -rf /var/www/html/ARES-API
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
 
-## About Laravel
+/* Baja del Git el proyecto Completo */
+git clone https://github.com/franklinantonio08/ARES-API.git
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+/* Entramos al directorio del proyecto*/
+cd ARES-API
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+/* Actualizamos el Composer */
+composer update 
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+/* copia el example.env a .env */ 
+mv .env.example .env
+chmod 600 .env
+chown apache:apache .env  
 
-## Learning Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+/* Permisos al storage*/
+sudo chown -R apache:apache /var/www/html/ARES-API/storage/
+sudo chown -R apache:apache /var/www/html/ARES-API/bootstrap/cache
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+sudo chmod -R 775 /var/www/html/ARES-API/storage
+sudo chmod -R 775 /var/www/html/ARES-API/bootstrap/cache
 
-## Laravel Sponsors
+chown -R apache:apache storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+sudo semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/html/ARES-API/storage(/.*)?"
+sudo semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/html/ARES-API/bootstrap/cache(/.*)?"
 
-### Premium Partners
+sudo restorecon -Rv /var/www/html/ARES-API/storage
+sudo restorecon -Rv /var/www/html/ARES-API/bootstrap/cache
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[OP.GG](https://op.gg)**
 
-## Contributing
+sudo chmod -R 775 /var/www/html/ARES-API/storage/app/public
+sudo chown -R apache:apache /var/www/html/ARES-API/storage/app/public
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+php artisan storage:link
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+/* http - https*/
+sudo nano /etc/httpd/conf.d/ares-api.conf
 
-## Security Vulnerabilities
+                                                                                   
+<VirtualHost *:8090>
+    ServerName 172.20.31.14
+    DocumentRoot /var/www/html/ARES-API/public
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    <Directory /var/www/html/ARES-API/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
 
-## License
+    ErrorLog /var/log/httpd/ares_error.log
+    CustomLog /var/log/httpd/ares_access.log combined
+</VirtualHost>
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# ARES-API
-# ARES-API
+
+/* borra cache */
+php artisan optimize:clear 
+
+/* caché para producción */
+php artisan config:cache 
+php artisan route:cache 
+php artisan view:cache 
+php artisan event:cache
+
+/* Eliminina el log si esta muy pesado*/
+echo "" > storage/logs/laravel.log
+
+
+/* MYSQL */
+
+sudo systemctl status mysqld
+
+sudo systemctl start mysqld
+
+sudo systemctl restart mysqld
+
+sudo systemctl stop mysqld
+
+sudo systemctl enable mysqld
+
+/* APACHE */
+
+sudo systemctl status httpd
+
+sudo systemctl start httpd
+
+sudo systemctl restart httpd
+
+sudo systemctl stop httpd
+
+sudo systemctl enable httpd
+
+/etc/httpd/conf.d/ssl.conf
+

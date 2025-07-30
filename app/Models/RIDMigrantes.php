@@ -9,12 +9,14 @@ class RIDMigrantes extends Model
 {
     use HasFactory;
 
-    protected $table = 'RID_migrante';
+    protected $table = 'rid_migrante';
 
 
     protected $fillable = [
-        'nombre',
-        'apellido',
+        'primerNombre',
+        'segundoNombre',
+        'primerApellido',
+        'segundoApellido',
         'fechaNacimiento',
         'codigo',
         'documento',
@@ -23,8 +25,10 @@ class RIDMigrantes extends Model
         'nacionalidadId',
         'genero',
         'tipo',
-        'puestoId',
+        'tipoubicacionId',
+        'ubicacionId',
         'afinidadId',
+        'familiaId',
         'infoextra',
         'estatus',
         'usuarioId',

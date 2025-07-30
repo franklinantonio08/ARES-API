@@ -4,6 +4,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Denuncias\DenunciasController;
+use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\AuthController;
 
 /*
@@ -25,11 +26,14 @@ Route::get('/denuncias', [DenunciasController::class, 'index']);
 
 Route::get('/denuncias/search/{establecimiento}', [DenunciasController::class, 'search']);
 
+ 
+
 
 // Protected Routes
 Route::group(['middleware'=>['auth:sanctum']], function () {   
 
     Route::post('/denuncias/id', [DenunciasController::class, 'show']);
+    
 
     Route::post('/denuncias', [DenunciasController::class, 'store']);    
     Route::put('/denuncias/{id}', [DenunciasController::class, 'update']);
@@ -39,6 +43,10 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::post('/denuncias/consultaCodigo', [DenunciasController::class, 'consultaCodigo']);    
 
     Route::post('/denuncias/migrateData', [DenunciasController::class, 'migrateData']);    
+
+    Route::post('/denuncias/migrateDataFamilia', [DenunciasController::class, 'migrateDataFamilia']);    
+
+   Route::post('/vehiculos', [VehiculoController::class, 'ListaVehiculos']);
 
 });
 
