@@ -47,6 +47,11 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::post('/denuncias/migrateDataFamilia', [DenunciasController::class, 'migrateDataFamilia']);    
 
    Route::post('/vehiculos', [VehiculoController::class, 'ListaVehiculos']);
+   
+   Route::post('/BuscarVehiculos', [VehiculoController::class, 'BuscarVehiculos']);
+
+   Route::post('/accesorios', [VehiculoController::class, 'ListaAccesorios']);
+   
 
 });
 
