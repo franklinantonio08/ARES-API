@@ -47,6 +47,13 @@ class VehiculoController extends Controller
 
     }
 
+    
+    public function GuardaInspeccion(Request $request) {
+
+        $datos = $request->all(); // obtiene todos los datos enviados
+
+        return response()->json($datos); // los retorna como JSON
+    }
 
 
 }

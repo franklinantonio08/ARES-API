@@ -51,6 +51,8 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
    Route::post('/BuscarVehiculos', [VehiculoController::class, 'BuscarVehiculos']);
 
    Route::post('/accesorios', [VehiculoController::class, 'ListaAccesorios']);
+
+   Route::post('/inspeccion', [VehiculoController::class, 'GuardaInspeccion']);
    
 
 });
