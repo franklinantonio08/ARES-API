@@ -83,10 +83,11 @@ class OperativoController extends Controller
         $carnetInfoGeneral = null;      
 
         if ($carnet) {
+            
             $carnetInfoGeneral = [
                 'num_carnet'           => $carnet->num_carnet,
                 'tipo_carnet'          => $carnet->tipo_carnet,
-                'tipo_visa'            => $carnet->tipo_visa,
+                'tipo_visa'            => $carnet->tipo_visa ? trim($carnet->tipo_visa) : null,
                 'numero_tramite'       => $carnet->numero_tramite,
                 'cotizacion'           => $carnet->cotizacion,
                 'fecha_expedicion'     => $fmtFecha($carnet->fecha_expedicion),
@@ -94,10 +95,19 @@ class OperativoController extends Controller
                 'fecha_llegada_panama' => $fmtFecha($carnet->fecha_llegada_panama),
                 'fecha_resolucion'     => $fmtFecha($carnet->fecha_resolucion),
                 'fecha_notificacion'   => $fmtFecha($carnet->fecha_notificacion),
-                'impreso'              => is_null($carnet->impreso) ? null : (bool)$carnet->impreso,
+                // 'impreso'              => is_null($carnet->impreso) ? null : (bool)$carnet->impreso,
                 'ruta_imagen'          => $carnet->ruta_Imagen,
+                'tipo_solicitud'       => $title($carnet->tipo_reporte),
+                'estatus_carnet'       => ($carnet->tipo_reporte === 'RESIDENTE PERMANENTE')
+                                            ? 'Vigente'
+                                            : (
+                                                $carnet->fecha_expiracion
+                                                    ? (\Carbon\Carbon::parse($carnet->fecha_expiracion)->isPast()
+                                                        ? 'Vencido'
+                                                        : 'Vigente')
+                                                    : 'Sin fecha de expiración'
+                                            ),
             ];
-
         }
 
         $fotoPerfilUrl = null;
