@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Denuncias\DenunciasController;
 use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OperativoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +54,8 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
    Route::post('/accesorios', [VehiculoController::class, 'ListaAccesorios']);
 
    Route::post('/inspeccion', [VehiculoController::class, 'GuardaInspeccion']);
+
+   Route::post('/operativo/BuscarRuex', [OperativoController::class, 'BuscarRuex']);
    
 
 });

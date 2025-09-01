@@ -39,7 +39,7 @@ class VehiculoController extends Controller
             'vehiculo' => $vehiculo,
             // 'accesorios' => $accesorios
         ]);
-        }
+    }
 
     public function ListaAccesorios() {
 
