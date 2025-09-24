@@ -4,9 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-
 use App\Models\RuexInfo;
 use App\Models\CarnetInfo;
+use App\Models\Provincia;
+use App\Models\Distrito;
+use App\Models\Corregimiento;
+use App\Models\Pais;
+use App\Models\Operativo;
+use App\Models\Acciones;
+use App\Models\Motivos;
+
 use App\Helpers\FotoHelper;
 
 use DB;
@@ -126,4 +133,83 @@ class OperativoController extends Controller
             'foto' => $fotoPerfilUrl,
         ]);
     }
+
+    public function BuscarPais(Request $request) {
+
+         $pais = Pais::orderBy('pais', 'asc')
+                        ->get();
+
+        return response()->json($pais);
+
+    }
+    
+    public function BuscarOperativo(Request $request) {
+
+        // $provinciaId = $request->input('provinciaId');
+
+        $operativo = Operativo::where('estatus', '=', 'Activo')
+                            ->orderBy('descripcion', 'asc')
+                            ->get();
+
+        return response()->json($operativo);
+    }
+
+    public function BuscarAcciones(Request $request) {
+
+        // $provinciaId = $request->input('provinciaId');
+
+        $acciones = Acciones::where('estatus', '=', 'Activo')
+                            ->orderBy('descripcion', 'asc')
+                            ->get();
+
+        return response()->json($acciones);
+    }
+
+    public function BuscarMotivo(Request $request) {
+
+        $accionId = $request->input('accionId');
+
+        $motivo = Motivos::where('accionId', $accionId)
+                            ->where('estatus', '=', 'Activo')
+                            ->orderBy('descripcion', 'asc')
+                            ->get();
+
+        return response()->json($motivo);
+    }
+
+
+    public function BuscarProvincia(Request $request) {
+
+        return Provincia:: all();
+
+    }
+
+    public function BuscarDistrito(Request $request) {
+
+        $provinciaId = $request->input('provinciaId');
+
+        $distritos = Distrito::where('provinciaId', $provinciaId)
+                            ->orderBy('nombre', 'asc')
+                            ->get();
+
+        return response()->json($distritos);
+    }
+
+    public function BuscarCorregimiento(Request $request) {
+
+        // $distritoId = $request->input('distritoId');
+
+        //  return Provincia:: all();
+
+         $distritoId = $request->input('distritoId');
+
+        $corregimiento = Corregimiento::where('distritoId', $distritoId)
+                            ->orderBy('nombre', 'asc')
+                            ->get();
+
+        return response()->json($corregimiento);
+
+    }
+
+     
 }

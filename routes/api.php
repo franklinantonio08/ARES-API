@@ -41,21 +41,23 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::delete('/denuncias/{id}', [DenunciasController::class, 'destroy']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::post('/denuncias/consultaCodigo', [DenunciasController::class, 'consultaCodigo']);    
-
-    Route::post('/denuncias/migrateData', [DenunciasController::class, 'migrateData']);    
-
+    Route::post('/denuncias/consultaCodigo', [DenunciasController::class, 'consultaCodigo']); 
+    Route::post('/denuncias/migrateData', [DenunciasController::class, 'migrateData']);
     Route::post('/denuncias/migrateDataFamilia', [DenunciasController::class, 'migrateDataFamilia']);    
 
-   Route::post('/vehiculos', [VehiculoController::class, 'ListaVehiculos']);
-   
-   Route::post('/BuscarVehiculos', [VehiculoController::class, 'BuscarVehiculos']);
+    Route::post('/vehiculos', [VehiculoController::class, 'ListaVehiculos']);
+    Route::post('/BuscarVehiculos', [VehiculoController::class, 'BuscarVehiculos']);
+    Route::post('/accesorios', [VehiculoController::class, 'ListaAccesorios']);
+    Route::post('/inspeccion', [VehiculoController::class, 'GuardaInspeccion']);
 
-   Route::post('/accesorios', [VehiculoController::class, 'ListaAccesorios']);
-
-   Route::post('/inspeccion', [VehiculoController::class, 'GuardaInspeccion']);
-
-   Route::post('/operativo/BuscarRuex', [OperativoController::class, 'BuscarRuex']);
+    Route::post('/operativo/BuscarRuex', [OperativoController::class, 'BuscarRuex']);
+    Route::post('/operativo/BuscarPais', [OperativoController::class, 'BuscarPais']);
+    Route::post('/operativo/BuscarOperativo', [OperativoController::class, 'BuscarOperativo']);
+    Route::post('/operativo/BuscarAcciones', [OperativoController::class, 'BuscarAcciones']);
+    Route::post('/operativo/BuscarMotivo', [OperativoController::class, 'BuscarMotivo']);
+    Route::post('/operativo/BuscarProvincia', [OperativoController::class, 'BuscarProvincia']);
+    Route::post('/operativo/BuscarDistrito', [OperativoController::class, 'BuscarDistrito']);
+    Route::post('/operativo/BuscarCorregimiento', [OperativoController::class, 'BuscarCorregimiento']);
    
 
 });
