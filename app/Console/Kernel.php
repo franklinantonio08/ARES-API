@@ -4,6 +4,8 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Facades\File;
 
 class Kernel extends ConsoleKernel
 {
@@ -25,6 +27,20 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        
+        $schedule->call(function () {
+            PersonalAccessToken::query()->delete();
+        })->dailyAt('12:00')->timezone('America/Panama');
+
+        $schedule->call(function () {
+            $path = storage_path('framework/sessions');
+            if (File::exists($path)) {
+                foreach (File::files($path) as $file) {
+                    @File::delete($file->getPathname());
+                }
+            }
+        })->dailyAt('12:01')->timezone('America/Panama');
+
     }
 
     /**
