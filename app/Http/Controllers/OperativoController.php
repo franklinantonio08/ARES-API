@@ -13,6 +13,7 @@ use App\Models\Pais;
 use App\Models\Operativo;
 use App\Models\Acciones;
 use App\Models\Motivos;
+use App\Models\Impedimentos;
 
 use App\Helpers\FotoHelper;
 
@@ -125,10 +126,31 @@ class OperativoController extends Controller
             );
         }
 
-        
+
+        $impedimientos = Impedimentos::select([
+            'cod_impedimento',
+            'cod_impedido',
+            'primerNombre',
+            'segundoNombre',
+            'primerApellido',
+            'segundoApellido',
+            'genero',
+            'fecha_nacimiento',
+            'nacionalidad',
+            'cod_pais_nacional',
+            'num_oficio',
+            'observacion',
+            'nombre_autoridad',
+            'nom_accion',
+            'nom_alerta',
+        ])
+        ->where('primerNombre', 'LIKE', '%' . $ruex->primerNombre . '%')
+        ->where('primerApellido', 'LIKE', '%' . $ruex->primerApellido . '%')
+        ->get();      
 
         return response()->json([
             'ruex' => $ruexInfoGeneral,
+            'impedimientos' => $impedimientos,
             'carnet' => $carnetInfoGeneral,
             'foto' => $fotoPerfilUrl,
         ]);
@@ -197,8 +219,6 @@ class OperativoController extends Controller
 
     public function BuscarCorregimiento(Request $request) {
 
-        // $distritoId = $request->input('distritoId');
-
         //  return Provincia:: all();
 
          $distritoId = $request->input('distritoId');
@@ -210,6 +230,87 @@ class OperativoController extends Controller
         return response()->json($corregimiento);
 
     }
+
+    public function BuscarPasaporte(Request $request) {
+
+        //  return Provincia:: all();
+
+        $pasaporte      = $request->input('pasaporte');
+        $primerNombre   = $request->input('primerNombre');
+        $primerApellido = $request->input('primerApellido');
+        $nacionalidad   = $request->input('nacionalidad');
+        $diaN           = $request->input('diaN');
+        $MesN           = $request->input('MesN');
+        $anioN          = $request->input('anioN');
+
+        $fndia  = (int) ($diaN  ?? 0);
+        $fnmes  = (int) ($MesN  ?? 0);
+        $fnanio = (int) ($anioN ?? 0);
+
+        $fecha_fn = null;
+        if ($fndia || $fnmes || $fnanio) {
+            if (!($fndia && $fnmes && $fnanio && checkdate($fnmes, $fndia, $fnanio))) {
+                return back()->withErrors('Fecha de nacimiento inválida')->withInput();
+            }
+            $fecha_fn = sprintf('%04d-%02d-%02d', $fnanio, $fnmes, $fndia);
+        }
+
+        $ruex = RuexInfo::where('pasaporte', '=',$pasaporte)
+        ->where('primerNombre', '=',$primerNombre)
+        ->where('primerApellido', '=',$primerApellido)
+        ->where('fecha_nacimiento', '=',$fecha_fn)
+        ->where('pais_nacionalidad', '=',$nacionalidad)
+        ->orderBy('primerNombre', 'asc')
+        // ->select([
+        //     'num_filiacion',
+        //     'primerNombre',
+        //     'segundoNombre',
+        //     'primerApellido',
+        //     'segundoApellido',
+        //     'casadaApellidos',
+        //     'genero',
+        //     'pasaporte',
+        //     'fecha_nacimiento',
+        //     'pais_nacionalidad',
+        //     'pais_nacimiento',
+        // ])        
+        ->get();
+
+         $impedimientos = Impedimentos::select([
+            'cod_impedimento',
+            'cod_impedido',
+            'primerNombre',
+            'segundoNombre',
+            'primerApellido',
+            'segundoApellido',
+            'genero',
+            'fecha_nacimiento',
+            'nacionalidad',
+            'cod_pais_nacional',
+            'num_oficio',
+            'observacion',
+            'nombre_autoridad',
+            'nom_accion',
+            'nom_alerta',
+        ])
+        ->where('primerNombre', 'LIKE', '%' . $primerNombre . '%')
+        ->where('primerApellido', 'LIKE', '%' . $primerApellido . '%')
+        ->get();
+
+        return response()->json([
+            'ruex' => $ruex,
+            'impedimientos' => $impedimientos,          
+        ]);
+
+    }
+
+    public function GuardaOperacion(Request $request) {
+
+        $datos = $request->all();
+
+        return response()->json($datos);
+    }
+
 
      
 }

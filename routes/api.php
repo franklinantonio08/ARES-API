@@ -51,6 +51,7 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::post('/inspeccion', [VehiculoController::class, 'GuardaInspeccion']);
 
     Route::post('/operativo/BuscarRuex', [OperativoController::class, 'BuscarRuex']);
+    Route::post('/operativo/BuscarPasaporte', [OperativoController::class, 'BuscarPasaporte']);
     Route::post('/operativo/BuscarPais', [OperativoController::class, 'BuscarPais']);
     Route::post('/operativo/BuscarOperativo', [OperativoController::class, 'BuscarOperativo']);
     Route::post('/operativo/BuscarAcciones', [OperativoController::class, 'BuscarAcciones']);
@@ -58,7 +59,7 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::post('/operativo/BuscarProvincia', [OperativoController::class, 'BuscarProvincia']);
     Route::post('/operativo/BuscarDistrito', [OperativoController::class, 'BuscarDistrito']);
     Route::post('/operativo/BuscarCorregimiento', [OperativoController::class, 'BuscarCorregimiento']);
-   
+    Route::post('/operativo/GuardaOperacion', [OperativoController::class, 'GuardaOperacion']);  
 
 });
 
