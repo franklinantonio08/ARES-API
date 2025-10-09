@@ -343,7 +343,7 @@ class OperativoController extends Controller
         $fechaCitacion      = $request->input('fechaCitacion');
         $comentario         = $request->input('comentario');
 
-        $pais = DB::table('pais')->where('pais', $paisNacimiento)->first();
+        $pais = DB::table('pais')->where('id', $paisNacimiento)->first();
 
         if (!$pais) {
             throw new \RuntimeException('País no encontrado.');
