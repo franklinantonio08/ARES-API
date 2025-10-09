@@ -310,7 +310,7 @@ class OperativoController extends Controller
 
     public function GuardaOperacion(Request $request) {
 
-        $this->common->ensureSucursalOrFail();
+        // $this->common->ensureSucursalOrFail();
 
         //$datos = $request->all();
 
