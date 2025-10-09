@@ -316,34 +316,34 @@ class OperativoController extends Controller
 
 
         // $pasaporte      = $request->input('fecha');
-        $inspectorId    = $request->input('inspectorId');
+        $inspectorId        = $request->input('inspectorId');
 
-        $latitud        = $request->input('latitud');
-        $longitud       = $request->input('longitud');
-        $primerNombre   = $request->input('primerNombre');
-        $segundoNombre  = $request->input('segundoNombre');
-        $primerApellido = $request->input('primerApellido');
-        $segundoApellido   = $request->input('segundoApellido');
+        $latitud            = $request->input('latitud');
+        $longitud           = $request->input('longitud');
+        $primerNombre       = $request->input('primerNombre');
+        $segundoNombre      = $request->input('segundoNombre');
+        $primerApellido     = $request->input('primerApellido');
+        $segundoApellido    = $request->input('segundoApellido');
 
-        $documento      = $request->input('documento');
-        $pasaporte      = $request->input('pasaporte');
-        $fechaNacimiento   = $request->input('fechaNacimiento');
-        $genero         = $request->input('genero');
+        $documento          = $request->input('documento');
+        $pasaporte          = $request->input('pasaporte');
+        $fechaNacimiento    = $request->input('fechaNacimiento');
+        $genero             = $request->input('genero');
 
-        $paisNacimiento = $request->input('paisNacimiento');
-        $nacionalidad   = $request->input('nacionalidad');
-        $operativoId    = $request->input('operativo');
-        $accionId       = $request->input('accionId');
-        $motivoId       = $request->input('motivo');
+        $paisNacimiento     = $request->input('paisNacimiento');
+        $nacionalidad       = $request->input('nacionalidad');
+        $operativoId        = $request->input('operativo');
+        $accionId           = $request->input('accionId');
+        $motivoId           = $request->input('motivo');
 
-        $provinciaId    = $request->input('provinciaId');
-        $distritoId     = $request->input('distritoId');
-        $corregimientoId = $request->input('corregimientoId');
-        $lugarCaptacion = $request->input('lugarCaptacion');
-        $fechaCitacion  = $request->input('fechaCitacion');
-        $comentario     = $request->input('comentario');
+        $provinciaId        = $request->input('provinciaId');
+        $distritoId         = $request->input('distritoId');
+        $corregimientoId    = $request->input('corregimientoId');
+        $lugarCaptacion     = $request->input('lugarCaptacion');
+        $fechaCitacion      = $request->input('fechaCitacion');
+        $comentario         = $request->input('comentario');
 
-        $pais = DB::table('pais')->where('id', $this->request->pais)->first();
+        $pais = DB::table('pais')->where('pais', $paisNacimiento)->first();
 
         if (!$pais) {
             throw new \RuntimeException('País no encontrado.');
