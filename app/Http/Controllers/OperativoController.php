@@ -306,9 +306,41 @@ class OperativoController extends Controller
 
     public function GuardaOperacion(Request $request) {
 
-        $datos = $request->all();
+        //$datos = $request->all();
+
+
+        // $pasaporte      = $request->input('fecha');
+        $inspectorId    = $request->input('inspectorId');
+
+        $latitud        = $request->input('latitud');
+        $longitud       = $request->input('longitud');
+        $primerNombre   = $request->input('primerNombre');
+        $segundoNombre  = $request->input('segundoNombre');
+        $primerApellido = $request->input('primerApellido');
+        $segundoApellido   = $request->input('segundoApellido');
+
+        $documento      = $request->input('documento');
+        $pasaporte      = $request->input('pasaporte');
+        $fechaNacimiento   = $request->input('fechaNacimiento');
+        $genero         = $request->input('genero');
+
+        $paisNacimiento = $request->input('paisNacimiento');
+        $nacionalidad   = $request->input('nacionalidad');
+        $operativoId    = $request->input('operativo');
+        $accionId       = $request->input('accionId');
+        $motivoId       = $request->input('motivo');
+
+        $provinciaId    = $request->input('provinciaId');
+        $distritoId     = $request->input('distritoId');
+        $corregimientoId = $request->input('corregimientoId');
+        $lugarCaptacion = $request->input('lugarCaptacion');
+        $fechaCitacion  = $request->input('fechaCitacion');
+        $comentario     = $request->input('comentario');
 
         return response()->json($datos);
+
+
+
     }
 
 
