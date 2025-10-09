@@ -102,6 +102,19 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
         ],
+        'atlas' => [
+            'driver' => 'mysql',
+            'host' => env('ATLAS_DB_HOST', '127.0.0.1'),
+            'port' => env('ATLAS_DB_PORT', '3306'),
+            'database' => env('ATLAS_DB_DATABASE', 'forge'),
+            'username' => env('ATLAS_DB_USERNAME', 'forge'),
+            'password' => env('ATLAS_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
 
     ],
 

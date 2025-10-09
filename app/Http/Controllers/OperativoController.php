@@ -15,7 +15,11 @@ use App\Models\Acciones;
 use App\Models\Motivos;
 use App\Models\Impedimentos;
 
+use App\Models\Infractor;
+use App\Models\Infractoresoperativo;
+
 use App\Helpers\FotoHelper;
+use App\Helpers\CommonHelper;
 
 use DB;
 use Excel;
@@ -306,6 +310,8 @@ class OperativoController extends Controller
 
     public function GuardaOperacion(Request $request) {
 
+        $this->common->ensureSucursalOrFail();
+
         //$datos = $request->all();
 
 
@@ -337,7 +343,65 @@ class OperativoController extends Controller
         $fechaCitacion  = $request->input('fechaCitacion');
         $comentario     = $request->input('comentario');
 
-        return response()->json($datos);
+        $pais = DB::table('pais')->where('id', $this->request->pais)->first();
+
+        if (!$pais) {
+            throw new \RuntimeException('País no encontrado.');
+        }
+        $region = $pais->region_id;
+
+        if($genero === 'M'){
+            $genero = 'Masculino';
+        }else{
+            $genero = 'Femenino';
+        }
+
+
+        $infractor = new Infractor();
+        $infractor->primerNombre    = trim($primerNombre);
+        $infractor->segundoNombre   = trim($segundoNombre ?? '');
+        $infractor->primerApellido  = trim($primerApellido);
+        $infractor->segundoApellido = trim($segundoApellido ?? '');
+        $infractor->documento       = strtoupper(trim($documento));
+        $infractor->regionId        = $region;
+        $infractor->paisId          = (int) $paisNacimiento;
+        $infractor->nacionalidadId  = (int) $nacionalidad;
+        $infractor->fechaNacimiento = $fechaNacimiento; 
+        $infractor->genero          = $genero;
+
+        if($accionId === '4'){
+            $infractor->estatus         = 'Aprobado';
+        }else{
+            $infractor->estatus         = 'Pendiente';
+        }
+
+        $infractor->usuarioId       = $inspectorId;
+        $infractor->save();
+
+
+        // $infractorop = new Infractoresoperativo();
+        // $infractorop->infractorId         = $infractor->id;
+        // $infractorop->operativoId         = (int) $operativo;
+        // $infractorop->unidadSolicitanteId = $unidadSolicitante;
+        // $infractorop->motivoId            = (int) $motivoId;
+        // $infractorop->estatusId           = (int) $estatus;
+        // $infractorop->provinciaId         = (int) $this->request->provincia;
+        // $infractorop->distritoId          = (int) $this->request->distrito;
+        // $infractorop->corregimientoId     = (int) $this->request->corregimiento;
+        // $infractorop->direccion           = trim($this->request->direccion);
+        // $infractorop->fechacitacion       = $fecha_fc;
+
+        // if($this->request->estatus === '4'){
+        //     $infractorop->estatus         = 'Aprobado';
+        // }else{
+        //     $infractorop->estatus         = 'Pendiente';
+        // }
+        // $infractorop->infoextra           = trim($this->request->comentario ?? '');
+        // $infractorop->usuarioId           = Auth::id();
+        // $infractorop->save();
+
+
+        return response()->json($inspectorId);
 
 
 
