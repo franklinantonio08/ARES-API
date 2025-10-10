@@ -20,13 +20,22 @@ use App\Models\Infractoresoperativo;
 
 use App\Helpers\FotoHelper;
 use App\Helpers\CommonHelper;
+use App\Traits\Loggable;
 
 use DB;
 use Excel;
 use Carbon\Carbon;
 
-class OperativoController extends Controller
-{
+class OperativoController extends Controller{
+
+    private $request;
+    private $common;
+
+    public function __construct(Request $request){
+        
+        $this->request = $request;
+        $this->common = New CommonHelper();
+    }
     
 
     public function BuscarRuex(Request $request){
@@ -310,7 +319,7 @@ class OperativoController extends Controller
 
     public function GuardaOperacion(Request $request) {
 
-        // $this->common->ensureSucursalOrFail();
+        $this->common->ensureSucursalOrFail();
 
         //$datos = $request->all();
 
@@ -350,6 +359,12 @@ class OperativoController extends Controller
         }
         $region = $pais->region_id;
 
+        $operativo = DB::table('operativo')->where('id', $operativoId)->first();
+        if (!$operativo) {
+            throw new \RuntimeException('Operativo no encontrado.');
+        }
+        $unidadSolicitante = $operativo->unidaSolicitanteId ?? null;
+
         if($genero === 'M'){
             $genero = 'Masculino';
         }else{
@@ -379,29 +394,29 @@ class OperativoController extends Controller
         $infractor->save();
 
 
-        // $infractorop = new Infractoresoperativo();
-        // $infractorop->infractorId         = $infractor->id;
-        // $infractorop->operativoId         = (int) $operativo;
-        // $infractorop->unidadSolicitanteId = $unidadSolicitante;
-        // $infractorop->motivoId            = (int) $motivoId;
-        // $infractorop->estatusId           = (int) $estatus;
-        // $infractorop->provinciaId         = (int) $this->request->provincia;
-        // $infractorop->distritoId          = (int) $this->request->distrito;
-        // $infractorop->corregimientoId     = (int) $this->request->corregimiento;
-        // $infractorop->direccion           = trim($this->request->direccion);
-        // $infractorop->fechacitacion       = $fecha_fc;
+        $infractorop = new Infractoresoperativo();
+        $infractorop->infractorId         = $infractor->id;
+        $infractorop->operativoId         = (int) $operativoId;
+        $infractorop->unidadSolicitanteId = $unidadSolicitante;
+        $infractorop->motivoId            = (int) $motivoId;
+        $infractorop->estatusId           = (int) $accionId;
+        $infractorop->provinciaId         = (int) $provinciaId;
+        $infractorop->distritoId          = (int) $distritoId;
+        $infractorop->corregimientoId     = (int) $corregimientoId;
+        $infractorop->direccion           = trim($lugarCaptacion);
+        $infractorop->fechacitacion       = $fechaCitacion;
 
-        // if($this->request->estatus === '4'){
-        //     $infractorop->estatus         = 'Aprobado';
-        // }else{
-        //     $infractorop->estatus         = 'Pendiente';
-        // }
-        // $infractorop->infoextra           = trim($this->request->comentario ?? '');
-        // $infractorop->usuarioId           = Auth::id();
-        // $infractorop->save();
+        if($this->request->estatus === '4'){
+            $infractorop->estatus         = 'Aprobado';
+        }else{
+            $infractorop->estatus         = 'Pendiente';
+        }
+        $infractorop->infoextra           = trim($comentario ?? '');
+        $infractorop->usuarioId           = $inspectorId;
+        $infractorop->save();
 
 
-        return response()->json($inspectorId);
+        return response()->json($infractorop->id);
 
 
 
