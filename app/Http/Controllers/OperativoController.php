@@ -334,7 +334,7 @@ class OperativoController extends Controller{
         $primerApellido     = $request->input('primerApellido');
         $segundoApellido    = $request->input('segundoApellido');
 
-        $documento          = $request->input('documento');
+        $documento          = $request->input('identificador');
         $pasaporte          = $request->input('pasaporte');
         $fechaNacimiento    = $request->input('fechaNacimiento');
         $genero             = $request->input('genero');
