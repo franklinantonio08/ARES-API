@@ -42,7 +42,7 @@ return [
         ],
 
         'api' => [
-            'driver' => 'token',
+            'driver' => 'sanctum',
             'provider' => 'users',
             'hash' => false,
         ],
@@ -65,17 +65,29 @@ return [
     |
     */
 
-    'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+'providers' => [
+    'users' => [
+        'driver'     => 'ldap',
+        'model'      => App\Models\LdapUser::class,
+        'connection' => env('LDAP_CONNECTION', 'default'),
+        'database'   => [
+            'model'          => App\Models\User::class,
+            'sync_passwords' => false,
+            'sync_attributes'=> [
+                'name'     => 'cn',
+                'lastName' => 'sn',
+                'username' => 'samaccountname',
+                'email'    => 'mail',
+                'guid'     => 'objectguid',
+                // Valores por defecto útiles en tu estructura:
+                'estatus'      => fn () => 'Activo',
+                'tipo_usuario' => fn () => 'UsuarioSNM',
+            ],
+            'sync_existing' => ['email' => 'mail'],
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
+],
+
 
     /*
     |--------------------------------------------------------------------------

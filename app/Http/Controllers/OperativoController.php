@@ -22,6 +22,8 @@ use App\Helpers\FotoHelper;
 use App\Helpers\CommonHelper;
 use App\Traits\Loggable;
 
+use Illuminate\Support\Facades\Auth;
+
 use DB;
 use Excel;
 use Carbon\Carbon;
@@ -39,6 +41,25 @@ class OperativoController extends Controller{
     
 
     public function BuscarRuex(Request $request){
+
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
+
 
         $num_filiacion = $request->input('ruex');
 
@@ -171,6 +192,24 @@ class OperativoController extends Controller{
 
     public function BuscarPais(Request $request) {
 
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
+
          $pais = Pais::orderBy('pais', 'asc')
                         ->get();
 
@@ -180,7 +219,23 @@ class OperativoController extends Controller{
     
     public function BuscarOperativo(Request $request) {
 
-        // $provinciaId = $request->input('provinciaId');
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
 
         $operativo = Operativo::where('estatus', '=', 'Activo')
                             ->orderBy('descripcion', 'asc')
@@ -191,7 +246,23 @@ class OperativoController extends Controller{
 
     public function BuscarAcciones(Request $request) {
 
-        // $provinciaId = $request->input('provinciaId');
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
 
         $acciones = Acciones::where('estatus', '=', 'Activo')
                             ->orderBy('descripcion', 'asc')
@@ -201,6 +272,24 @@ class OperativoController extends Controller{
     }
 
     public function BuscarMotivo(Request $request) {
+
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
 
         $accionId = $request->input('accionId');
 
@@ -215,11 +304,47 @@ class OperativoController extends Controller{
 
     public function BuscarProvincia(Request $request) {
 
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
+
         return Provincia:: all();
 
     }
 
     public function BuscarDistrito(Request $request) {
+
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
 
         $provinciaId = $request->input('provinciaId');
 
@@ -232,7 +357,23 @@ class OperativoController extends Controller{
 
     public function BuscarCorregimiento(Request $request) {
 
-        //  return Provincia:: all();
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
 
          $distritoId = $request->input('distritoId');
 
@@ -246,7 +387,23 @@ class OperativoController extends Controller{
 
     public function BuscarPasaporte(Request $request) {
 
-        //  return Provincia:: all();
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
 
         $pasaporte      = $request->input('pasaporte');
         $primerNombre   = $request->input('primerNombre');
@@ -318,6 +475,24 @@ class OperativoController extends Controller{
     }
 
     public function GuardaOperacion(Request $request) {
+
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
 
         $this->common->ensureSucursalOrFail();
 

@@ -44,8 +44,8 @@ php artisan storage:link
 sudo nano /etc/httpd/conf.d/ares-api.conf
 
                                                                                    
-<VirtualHost *:8090>
-    ServerName 172.20.31.14
+<VirtualHost *:80>
+    ServerName 172.20.17.29
     DocumentRoot /var/www/html/ARES-API/public
 
     <Directory /var/www/html/ARES-API/public>

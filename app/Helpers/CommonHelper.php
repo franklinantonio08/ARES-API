@@ -10,18 +10,17 @@ class CommonHelper
 {
     public $message = 'No tiene permiso para acceder a esta sección.';
 
-    public function usuariopermiso($codigoPermiso)
+public function usuariopermiso(string $codigoPermiso, ?int $userId = null): bool
     {
-        $usuariopermiso = DB::table('usuario_permiso')
-        ->where('usuario_permiso.usuarioId', '=', Auth::user()->id)
-        ->where('usuario_permiso.codigo', '=', $codigoPermiso)
-        ->select('usuario_permiso.valor')->first();
+        $uid = $userId ?? Auth::id();
+        if (!$uid) return false;
 
-        if (empty($usuariopermiso) || $usuariopermiso->valor != 'TRUE') {
-            return false;
-        }
+        $perm = DB::table('usuario_permiso')
+            ->where('usuarioId', $uid)
+            ->where('codigo', $codigoPermiso)
+            ->value('valor');
 
-        return true;
+        return $perm === 'TRUE';
     }
 
     public function asignarPermisosUsuario($usuarioId, $rolId) {
