@@ -79,9 +79,8 @@ return [
                 'username' => 'samaccountname',
                 'email'    => 'mail',
                 'guid'     => 'objectguid',
-                // Valores por defecto útiles en tu estructura:
-                'estatus'      => fn () => 'Activo',
-                'tipo_usuario' => fn () => 'UsuarioSNM',
+                'estatus'    => 'Activo',
+                'tipo_usuario' => 'UsuarioSNM',
             ],
             'sync_existing' => ['email' => 'mail'],
         ],
