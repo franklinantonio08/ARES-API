@@ -44,7 +44,7 @@ php artisan storage:link
 sudo nano /etc/httpd/conf.d/ares-api.conf
 
                                                                                    
-<VirtualHost *:80>
+<VirtualHost *:443>
     ServerName 172.20.17.29
     DocumentRoot /var/www/html/ARES-API/public
 
@@ -97,3 +97,9 @@ sudo systemctl enable httpd
 
 /etc/httpd/conf.d/ssl.conf
 
+
+
+filtro de aceite 
+filtro de motor 
+filtro de cabina
+aceite de motor 
