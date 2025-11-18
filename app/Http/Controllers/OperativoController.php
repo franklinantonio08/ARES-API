@@ -23,7 +23,8 @@ use App\Helpers\CommonHelper;
 use App\Traits\Loggable;
 
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use DB;
 use Excel;
 use Carbon\Carbon;
@@ -496,7 +497,49 @@ class OperativoController extends Controller{
 
         $this->common->ensureSucursalOrFail();
 
-        //$datos = $request->all();
+        // $datos = $request->all();
+
+        // return $datos;
+
+        // return response()->json([
+        //     'original' => $request->file('adjuntos')[0]->getClientOriginalName(),
+        //     'temp' => $request->file('adjuntos')[0]->getRealPath(),
+        //     'size' => $request->file('adjuntos')[0]->getSize(),
+        // ]);
+
+
+        // return response()->json([
+        //     'hasFile' => $request->hasFile('adjuntos'),
+        //     'files' => $request->file('adjuntos'),
+        //     'all' => $request->all()
+        // ]);
+
+
+        if ($request->hasFile('adjuntos')) {
+
+            foreach ($request->file('adjuntos') as $file) {
+
+                if (!$file->isValid()) {
+                    throw new \RuntimeException('Archivo adjunto inválido.');
+                }
+
+                $ext = strtolower($file->getClientOriginalExtension());
+                $valid = ['png', 'jpg', 'jpeg'];
+
+                if (!in_array($ext, $valid)) {
+                    throw new \RuntimeException('Formato de imagen no permitido (solo png, jpg, jpeg).');
+                }
+
+                if ($file->getSize() > (8 * 1024 * 1024)) {
+                    throw new \RuntimeException('Imagen supera el tamaño permitido (8MB).');
+                }
+
+                $filename = 'infractor_' . uniqid('', true) . '.' . $ext;
+
+                // Guarda en storage/app/public/infractores
+                $file->storeAs('public/infractores', $filename);
+            }
+        }
 
 
         // $pasaporte      = $request->input('fecha');
@@ -590,13 +633,8 @@ class OperativoController extends Controller{
         $infractorop->usuarioId           = $inspectorId;
         $infractorop->save();
 
-
         return response()->json($infractorop->id);
 
-
-
     }
-
-
      
 }

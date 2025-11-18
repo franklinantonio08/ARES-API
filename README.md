@@ -98,8 +98,5 @@ sudo systemctl enable httpd
 /etc/httpd/conf.d/ssl.conf
 
 
-
-filtro de aceite 
-filtro de motor 
-filtro de cabina
-aceite de motor 
+/* Ejecuta proyecto */
+php -S 172.20.10.27:8000 -t public
