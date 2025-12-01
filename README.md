@@ -16,6 +16,7 @@ mv .env.example .env
 chmod 600 .env
 chown apache:apache .env  
 
+mkdir -p /var/www/html/ARES-API/storage/app/public/infractores
 
 /* Permisos al storage*/
 sudo chown -R apache:apache /var/www/html/ARES-API/storage/
