@@ -91,16 +91,21 @@ return [
             'prefix_indexes' => true,
         ],
 
-        'datamind' => [
+       'datamind' => [
             'driver' => 'sqlsrv',
             'host' => env('DB2_HOST', 'localhost'),
             'port' => env('DB2_PORT', '1433'),
             'database' => env('DB2_DATABASE', 'DATAMIND'),
+            'Encrypt' => 'no',
             'username' => env('DB2_USERNAME', 'bireporte'),
             'password' => env('DB2_PASSWORD', ''),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
+           // 'options' => [
+           //     'Encrypt' => 'yes',
+            //    'TrustServerCertificate' => 'yes',
+          //   ],
         ],
         'atlas' => [
             'driver' => 'mysql',
