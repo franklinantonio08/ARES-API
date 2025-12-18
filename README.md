@@ -16,6 +16,7 @@ mv .env.example .env
 chmod 600 .env
 chown apache:apache .env  
 
+mkdir -p /var/www/html/ARES-API/storage/app/public/infractores
 
 /* Permisos al storage*/
 sudo chown -R apache:apache /var/www/html/ARES-API/storage/
@@ -98,8 +99,5 @@ sudo systemctl enable httpd
 /etc/httpd/conf.d/ssl.conf
 
 
-
-filtro de aceite 
-filtro de motor 
-filtro de cabina
-aceite de motor 
+/* Ejecuta proyecto */
+php -S 172.20.10.27:8000 -t public

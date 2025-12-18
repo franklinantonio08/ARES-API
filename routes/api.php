@@ -52,6 +52,7 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
 
     Route::post('/operativo/BuscarRuex', [OperativoController::class, 'BuscarRuex']);
     Route::post('/operativo/BuscarPasaporte', [OperativoController::class, 'BuscarPasaporte']);
+    Route::post('/operativo/BuscarCedula', [OperativoController::class, 'BuscarCedula']);
     Route::post('/operativo/BuscarPais', [OperativoController::class, 'BuscarPais']);
     Route::post('/operativo/BuscarOperativo', [OperativoController::class, 'BuscarOperativo']);
     Route::post('/operativo/BuscarAcciones', [OperativoController::class, 'BuscarAcciones']);

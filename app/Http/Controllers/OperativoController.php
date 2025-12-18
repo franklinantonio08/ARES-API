@@ -23,7 +23,8 @@ use App\Helpers\CommonHelper;
 use App\Traits\Loggable;
 
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use DB;
 use Excel;
 use Carbon\Carbon;
@@ -474,6 +475,98 @@ class OperativoController extends Controller{
 
     }
 
+
+    public function BuscarCedula(Request $request) {
+
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
+
+        $cedula      = $request->input('cedula');
+        $primerNombre   = $request->input('primerNombre');
+        $primerApellido = $request->input('primerApellido');
+        $nacionalidad   = $request->input('nacionalidad');
+        $diaN           = $request->input('diaN');
+        $MesN           = $request->input('MesN');
+        $anioN          = $request->input('anioN');
+
+        $fndia  = (int) ($diaN  ?? 0);
+        $fnmes  = (int) ($MesN  ?? 0);
+        $fnanio = (int) ($anioN ?? 0);
+
+        $fecha_fn = null;
+        if ($fndia || $fnmes || $fnanio) {
+            if (!($fndia && $fnmes && $fnanio && checkdate($fnmes, $fndia, $fnanio))) {
+                return back()->withErrors('Fecha de nacimiento inválida')->withInput();
+            }
+            $fecha_fn = sprintf('%04d-%02d-%02d', $fnanio, $fnmes, $fndia);
+        }
+
+        $ruex = RuexInfo::
+        // where('pasaporte', '=',$pasaporte)
+        //->
+        where('primerNombre', '=',$primerNombre)
+        ->where('primerApellido', '=',$primerApellido)
+        ->where('fecha_nacimiento', '=',$fecha_fn)
+        ->where('pais_nacionalidad', '=',$nacionalidad)
+        ->orderBy('primerNombre', 'asc')
+        // ->select([
+        //     'num_filiacion',
+        //     'primerNombre',
+        //     'segundoNombre',
+        //     'primerApellido',
+        //     'segundoApellido',
+        //     'casadaApellidos',
+        //     'genero',
+        //     'pasaporte',
+        //     'fecha_nacimiento',
+        //     'pais_nacionalidad',
+        //     'pais_nacimiento',
+        // ])        
+        ->get();
+
+         $impedimientos = Impedimentos::select([
+            'cod_impedimento',
+            'cod_impedido',
+            'primerNombre',
+            'segundoNombre',
+            'primerApellido',
+            'segundoApellido',
+            'genero',
+            'fecha_nacimiento',
+            'nacionalidad',
+            'cod_pais_nacional',
+            'num_oficio',
+            'observacion',
+            'nombre_autoridad',
+            'nom_accion',
+            'nom_alerta',
+        ])
+        ->where('primerNombre', 'LIKE', '%' . $primerNombre . '%')
+        ->where('primerApellido', 'LIKE', '%' . $primerApellido . '%')
+        ->get();
+
+        return response()->json([
+            'ruex' => $ruex,
+            'impedimientos' => $impedimientos,          
+        ]);
+
+    }
+
     public function GuardaOperacion(Request $request) {
 
         $userId = $request->user()->id ?? Auth::id();
@@ -496,7 +589,49 @@ class OperativoController extends Controller{
 
         $this->common->ensureSucursalOrFail();
 
-        //$datos = $request->all();
+        // $datos = $request->all();
+
+        // return $datos;
+
+        // return response()->json([
+        //     'original' => $request->file('adjuntos')[0]->getClientOriginalName(),
+        //     'temp' => $request->file('adjuntos')[0]->getRealPath(),
+        //     'size' => $request->file('adjuntos')[0]->getSize(),
+        // ]);
+
+
+        // return response()->json([
+        //     'hasFile' => $request->hasFile('adjuntos'),
+        //     'files' => $request->file('adjuntos'),
+        //     'all' => $request->all()
+        // ]);
+
+
+        if ($request->hasFile('adjuntos')) {
+
+            foreach ($request->file('adjuntos') as $file) {
+
+                if (!$file->isValid()) {
+                    throw new \RuntimeException('Archivo adjunto inválido.');
+                }
+
+                $ext = strtolower($file->getClientOriginalExtension());
+                $valid = ['png', 'jpg', 'jpeg'];
+
+                if (!in_array($ext, $valid)) {
+                    throw new \RuntimeException('Formato de imagen no permitido (solo png, jpg, jpeg).');
+                }
+
+                if ($file->getSize() > (8 * 1024 * 1024)) {
+                    throw new \RuntimeException('Imagen supera el tamaño permitido (8MB).');
+                }
+
+                $filename = 'infractor_' . uniqid('', true) . '.' . $ext;
+
+                // Guarda en storage/app/public/infractores
+                $file->storeAs('public/infractores', $filename);
+            }
+        }
 
 
         // $pasaporte      = $request->input('fecha');
@@ -590,10 +725,7 @@ class OperativoController extends Controller{
         $infractorop->usuarioId           = $inspectorId;
         $infractorop->save();
 
-
         return response()->json($infractorop->id);
-
-
 
     }
 
