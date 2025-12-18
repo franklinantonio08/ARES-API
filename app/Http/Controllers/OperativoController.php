@@ -644,7 +644,7 @@ class OperativoController extends Controller{
         $primerApellido     = $request->input('primerApellido');
         $segundoApellido    = $request->input('segundoApellido');
 
-        $documento          = $request->input('identificador');
+        $documento          = $request->input('documento');
         $pasaporte          = $request->input('pasaporte');
         $fechaNacimiento    = $request->input('fechaNacimiento');
         $genero             = $request->input('genero');
@@ -728,5 +728,189 @@ class OperativoController extends Controller{
         return response()->json($infractorop->id);
 
     }
+
+
+    public function ActualizaOperacion(Request $request, $id)
+    {
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
+
+        $this->common->ensureSucursalOrFail();
+
+        // ============================
+        // 1. Buscar operación existente
+        // ============================
+        $infractorop = Infractoresoperativo::find($id);
+
+        if (!$infractorop) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Operación no encontrada.',
+                'code'    => 'NOT_FOUND'
+            ], 404);
+        }
+
+        $infractor = Infractor::find($infractorop->infractorId);
+
+        if (!$infractor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Infractor asociado no encontrado.',
+                'code'    => 'NOT_FOUND_INFRACTOR'
+            ], 404);
+        }
+
+        // ============================
+        // 2. Tomar datos del request
+        // ============================
+
+        $inspectorId        = $request->input('inspectorId');
+
+        $latitud            = $request->input('latitud');
+        $longitud           = $request->input('longitud');
+        $primerNombre       = $request->input('primerNombre');
+        $segundoNombre      = $request->input('segundoNombre');
+        $primerApellido     = $request->input('primerApellido');
+        $segundoApellido    = $request->input('segundoApellido');
+
+        $documento          = $request->input('documento');
+        $pasaporte          = $request->input('pasaporte');
+        $fechaNacimiento    = $request->input('fechaNacimiento');
+        $genero             = $request->input('genero');
+
+        $paisNacimiento     = $request->input('paisNacimiento');
+        $nacionalidad       = $request->input('nacionalidad');
+        $operativoId        = $request->input('operativo');
+        $accionId           = $request->input('accionId');
+        $motivoId           = $request->input('motivo');
+
+        $provinciaId        = $request->input('provinciaId');
+        $distritoId         = $request->input('distritoId');
+        $corregimientoId    = $request->input('corregimientoId');
+        $lugarCaptacion     = $request->input('lugarCaptacion');
+        $fechaCitacion      = $request->input('fechaCitacion');
+        $comentario         = $request->input('comentario');
+
+        // ============================
+        // 3. Validar país y operativo
+        // ============================
+
+        $pais = DB::table('rid_paises')->where('id', $paisNacimiento)->first();
+        if (!$pais) {
+            return response()->json([
+                'success' => false,
+                'message' => 'País no encontrado.',
+                'code'    => 'PAIS_NO_ENCONTRADO'
+            ], 422);
+        }
+        $region = $pais->region_id;
+
+        $operativo = DB::table('operativo')->where('id', $operativoId)->first();
+        if (!$operativo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Operativo no encontrado.',
+                'code'    => 'OPERATIVO_NO_ENCONTRADO'
+            ], 422);
+        }
+        $unidadSolicitante = $operativo->unidaSolicitanteId ?? null;
+
+        if ($genero === 'M') {
+            $genero = 'Masculino';
+        } else {
+            $genero = 'Femenino';
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // ============================
+            // 4. Actualizar INFRCTOR
+            // ============================
+
+            $infractor->primerNombre    = trim($primerNombre);
+            $infractor->segundoNombre   = trim($segundoNombre ?? '');
+            $infractor->primerApellido  = trim($primerApellido);
+            $infractor->segundoApellido = trim($segundoApellido ?? '');
+            $infractor->documento       = strtoupper(trim($documento));
+            $infractor->regionId        = $region;
+            $infractor->paisId          = (int) $paisNacimiento;
+            $infractor->nacionalidadId  = (int) $nacionalidad;
+            $infractor->fechaNacimiento = $fechaNacimiento;
+            $infractor->genero          = $genero;
+
+            if ($accionId === '4') {
+                $infractor->estatus = 'Aprobado';
+            } else {
+                $infractor->estatus = 'Pendiente';
+            }
+
+            $infractor->usuarioId = $inspectorId;
+            $infractor->save();
+
+            // ============================
+            // 5. Actualizar INFRACTOR_OPERATIVO
+            // ============================
+
+            $infractorop->infractorId         = $infractor->id;
+            $infractorop->operativoId         = (int) $operativoId;
+            $infractorop->unidadSolicitanteId = $unidadSolicitante;
+            $infractorop->motivoId            = (int) $motivoId;
+            $infractorop->estatusId           = (int) $accionId;
+            $infractorop->provinciaId         = (int) $provinciaId;
+            $infractorop->distritoId          = (int) $distritoId;
+            $infractorop->corregimientoId     = (int) $corregimientoId;
+            $infractorop->direccion           = trim($lugarCaptacion);
+            $infractorop->fechacitacion       = $fechaCitacion;
+
+            // OJO: aquí uso $accionId en vez de $this->request->estatus
+            if ($accionId === '4') {
+                $infractorop->estatus = 'Aprobado';
+            } else {
+                $infractorop->estatus = 'Pendiente';
+            }
+
+            $infractorop->infoextra = trim($comentario ?? '');
+            $infractorop->usuarioId = $inspectorId;
+            $infractorop->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success'       => true,
+                'message'       => 'Operación actualizada correctamente.',
+                'operacionId'   => $infractorop->id,
+                'infractorId'   => $infractor->id
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar la operación.',
+                'error'   => $e->getMessage(),
+                'code'    => 'ERROR_UPDATE'
+            ], 500);
+        }
+    }
+
+
+
      
 }
