@@ -29,6 +29,7 @@ use DB;
 use Excel;
 use Carbon\Carbon;
 
+
 class OperativoController extends Controller{
 
     private $request;
@@ -910,7 +911,105 @@ class OperativoController extends Controller{
         }
     }
 
+    public function Estadistica(){
 
+        
+        // =========================
+    // 1. Usuario autenticado
+    // =========================
+    $userId = $this->request->user()->id ?? Auth::id();
+
+    if (!$userId) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No autenticado.',
+            'code'    => 'UNAUTHENTICATED'
+        ], 401);
+    }
+
+    // =========================
+    // 2. Permisos
+    // =========================
+    if (!$this->common->usuariopermiso('050', $userId)) {
+        return response()->json([
+            'success' => false,
+            'message' => $this->common->message ?? 'Acceso no autorizado.',
+            'code'    => 'PERMISO_DENEGADO'
+        ], 403);
+    }
+
+    // =========================
+    // 3. Validar sucursal
+    // =========================
+    $this->common->ensureSucursalOrFail();
+
+    // =========================
+    // 4. Fecha de HOY
+    // =========================
+    $hoy = Carbon::today(); // usa la timezone de la app
+
+    // =========================
+    // 5. Consulta principal
+    // =========================
+    $rows = Infractoresoperativo::query()
+        ->where('usuarioId', $userId)
+        ->whereDate('created_at', $hoy) // 👈 SOLO HOY
+        ->with([
+            // Infractor
+            'infractor:id,primerNombre,primerApellido,documento,nacionalidadId',
+            'infractor.nacionalidad:id,pais',
+
+            // Catálogos
+            'motivo:id,descripcion',
+            'operativo:id,descripcion',
+            'provincia:id,nombre',
+
+            // Usuarios
+            'usuario:id,name,lastName',
+            'verificador:id,name,lastName'
+        ])
+        ->orderByDesc('created_at')
+        ->get()
+        ->map(function ($io) {
+
+            return [
+                'id' => $io->id,
+
+                // Datos del infractor
+                'nombre' => trim(
+                    ($io->infractor->primerNombre ?? '') . ' ' .
+                    ($io->infractor->primerApellido ?? '')
+                ),
+                'documento' => $io->infractor->documento ?? '',
+                'nacionalidad' => $io->infractor->nacionalidad->pais ?? '',
+
+                // Operativo
+                'motivo'    => $io->motivo->descripcion ?? '',
+                'operativo' => $io->operativo->descripcion ?? '',
+                'provincia' => $io->provincia->nombre ?? '',
+
+                // Usuarios
+                'funcionario' => trim(
+                    ($io->usuario->name ?? '') . ' ' .
+                    ($io->usuario->lastName ?? '')
+                ),
+                'aprobadoPor' => trim(
+                    ($io->verificador->name ?? '') . ' ' .
+                    ($io->verificador->lastName ?? '')
+                ),
+
+                // Estado y fecha
+                'estado' => $io->estatus,
+                'ts'     => optional($io->created_at)->toDateTimeString(),
+            ];
+        });
+
+    // =========================
+    // 6. Respuesta
+    // =========================
+    return response()->json($rows);
+
+    }
 
      
 }

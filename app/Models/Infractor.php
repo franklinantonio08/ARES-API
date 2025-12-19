@@ -15,8 +15,34 @@ class Infractor extends Model
     protected $table = 'infractor';
 
     protected $fillable = [
-        'estatus',
-        'verificadorId',
-        // otros campos que uses
-    ];
+            'primerNombre',
+            'segundoNombre',
+            'primerApellido',
+            'segundoApellido',
+            'fechaNacimiento',
+            'documento',
+            'regionId',
+            'paisId',
+            'nacionalidadId',
+            'genero',
+            'estatus',
+            'usuarioId',
+            'verificadorId',
+        ];
+
+        /** =========================
+         *  RELACIONES REALES (DDL)
+         *  ========================= */
+
+        // País de nacimiento
+        public function pais()
+        {
+            return $this->belongsTo(Pais::class, 'paisId');
+        }
+
+        // Nacionalidad
+        public function nacionalidad()
+        {
+            return $this->belongsTo(Pais::class, 'nacionalidadId');
+        }
 }
