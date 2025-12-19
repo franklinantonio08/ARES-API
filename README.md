@@ -100,4 +100,4 @@ sudo systemctl enable httpd
 
 
 /* Ejecuta proyecto */
-php -S 172.20.10.27:8000 -t public
+php -S 172.20.10.81:8000 -t public
