@@ -15,6 +15,9 @@ use App\Models\Acciones;
 use App\Models\Motivos;
 use App\Models\Impedimentos;
 
+use App\Models\AccionesInc;
+use App\Models\MotivosInc;
+
 use App\Models\Infractor;
 use App\Models\Infractoresoperativo;
 
@@ -1009,6 +1012,63 @@ class OperativoController extends Controller{
     // =========================
     return response()->json($rows);
 
+    }
+
+    public function BuscarAccionesInc(Request $request) {
+
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
+
+        $acciones = AccionesInc::where('estatus', '=', 'Activo')
+                            ->orderBy('descripcion', 'asc')
+                            ->get();
+
+        return response()->json($acciones);
+    }
+
+    public function BuscarMotivoInc(Request $request) {
+
+        $userId = $request->user()->id ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+                'code'    => 'UNAUTHENTICATED'
+            ], 401);
+        }
+
+        if (!$this->common->usuariopermiso('050', $userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'code'    => 'PERMISO_DENEGADO'
+            ], 403);
+        }
+
+        $accionId = $request->input('accionId');
+
+        $motivo = MotivosInc::where('accionId', $accionId)
+                            ->where('estatus', '=', 'Activo')
+                            ->orderBy('descripcion', 'asc')
+                            ->get();
+
+        return response()->json($motivo);
     }
 
      

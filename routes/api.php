@@ -63,6 +63,9 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::post('/operativo/GuardaOperacion', [OperativoController::class, 'GuardaOperacion']);  
     Route::put('/operativo/ActualizaOperacion/{id}', [OperativoController::class, 'ActualizaOperacion']);  
 
+    Route::post('/operativo/BuscarAccionesInc', [OperativoController::class, 'BuscarAccionesInc']);
+    Route::post('/operativo/BuscarMotivoInc', [OperativoController::class, 'BuscarMotivoInc']);
+
     Route::post('/operativo/Estadistica', [OperativoController::class, 'Estadistica']);  
 
 });
