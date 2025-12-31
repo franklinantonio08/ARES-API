@@ -10,12 +10,12 @@ class Infractoresoperativo extends Model
 {
     use HasFactory, HasSucursal;
 
-    protected $connection = 'atlas'; 
+    // protected $connection = 'atlas'; 
 
     protected $table = 'infractores_operativos';
 
     protected $fillable = [
-'infractorId',
+        'infractorId',
         'operativoId',
         'sucursalId',
         'unidadSolicitanteId',
