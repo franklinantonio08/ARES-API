@@ -959,17 +959,17 @@ class OperativoController extends Controller{
         ->whereDate('created_at', $hoy) // 👈 SOLO HOY
         ->with([
             // Infractor
-            'infractor:id, primerNombre, primerApellido, documento, nacionalidadId',
-            'infractor.nacionalidad:id, pais',
+            'infractor:id,primerNombre,primerApellido,documento,nacionalidadId',
+            'infractor.nacionalidad:id,pais',
 
             // Catálogos
-            'motivo:id, descripcion',
-            'operativo:id, descripcion',
-            'provincia:id, nombre',
+            'motivo:id,descripcion',
+            'operativo:id,descripcion',
+            'provincia:id,nombre',
 
             // Usuarios
-            'usuario:id, name, lastName',
-            'verificador:id, name, lastName'
+            'usuario:id,name,lastName',
+            'verificador:id,name,lastName'
         ])
         ->orderByDesc('created_at')
         ->get()
