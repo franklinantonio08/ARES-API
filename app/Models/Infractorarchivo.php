@@ -9,7 +9,7 @@ class Infractorarchivo extends Model
 {
     use HasFactory;
 
-    protected $connection = 'atlas'; 
+    //protected $connection = 'atlas'; 
     
     protected $table = 'infractores_operativos_archivos';
 

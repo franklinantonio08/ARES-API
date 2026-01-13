@@ -7,6 +7,9 @@ use App\Http\Controllers\Denuncias\DenunciasController;
 use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OperativoController;
+use App\Http\Controllers\InteropController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +52,11 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::post('/BuscarVehiculos', [VehiculoController::class, 'BuscarVehiculos']);
     Route::post('/accesorios', [VehiculoController::class, 'ListaAccesorios']);
     Route::post('/inspeccion', [VehiculoController::class, 'GuardaInspeccion']);
+
+    
+
+    Route::post('/interop/BuscarRuex', [InteropController::class, 'BuscarRuex']);
+
 
     Route::post('/operativo/BuscarRuex', [OperativoController::class, 'BuscarRuex']);
     Route::post('/operativo/BuscarPasaporte', [OperativoController::class, 'BuscarPasaporte']);

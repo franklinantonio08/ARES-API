@@ -10,7 +10,7 @@ class Infractor extends Model
 {
     use HasFactory, Loggable;
 
-    protected $connection = 'atlas'; 
+    //protected $connection = 'atlas'; 
 
     protected $table = 'infractor';
 
