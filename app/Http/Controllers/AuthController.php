@@ -103,7 +103,7 @@ class AuthController extends Controller
         $user->guid         = $guid ?: ($user->guid ?? null);
         $user->domain       = $domain;
         $user->estatus      = $user->estatus ?: 'Activo';
-        $user->tipo_usuario = $user->tipo_usuario ?: 'UsuarioSNM';
+        $user->tipo_usuario = $user->tipo_usuario ?: '1';
         if (empty($user->rolId)) $user->rolId = 11;
 
         $user->save();

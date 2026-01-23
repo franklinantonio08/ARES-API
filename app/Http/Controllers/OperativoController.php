@@ -673,11 +673,22 @@ class OperativoController extends Controller{
         }
         $region = $pais->region_id;
 
+       
+
+        // if(empty($operativoId)){
+
+        // return 'Hola';
+
+        // }else {
+
         $operativo = DB::table('operativo')->where('id', $operativoId)->first();
         if (!$operativo) {
             throw new \RuntimeException('Operativo no encontrado.');
         }
+
         $unidadSolicitante = $operativo->unidaSolicitanteId ?? null;
+        // }
+        
 
         if($genero === 'M'){
             $genero = 'Masculino';
@@ -720,7 +731,7 @@ class OperativoController extends Controller{
         $infractorop->direccion           = trim($lugarCaptacion);
         $infractorop->fechacitacion       = $fechaCitacion;
 
-        if($this->request->estatus === '4'){
+        if($accionId === '4'){
             $infractorop->estatus         = 'Aprobado';
         }else{
             $infractorop->estatus         = 'Pendiente';
