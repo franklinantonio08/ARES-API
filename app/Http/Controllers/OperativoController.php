@@ -15,6 +15,7 @@ use App\Models\Acciones;
 use App\Models\Motivos;
 use App\Models\Impedimentos;
 
+use App\Models\Infractoresincidencia;
 use App\Models\AccionesInc;
 use App\Models\MotivosInc;
 
@@ -675,26 +676,15 @@ class OperativoController extends Controller{
 
        
 
-        // if(empty($operativoId)){
 
-        // return 'Hola';
-
-        // }else {
-
-        $operativo = DB::table('operativo')->where('id', $operativoId)->first();
-        if (!$operativo) {
-            throw new \RuntimeException('Operativo no encontrado.');
-        }
-
-        $unidadSolicitante = $operativo->unidaSolicitanteId ?? null;
-        // }
-        
 
         if($genero === 'M'){
             $genero = 'Masculino';
         }else{
             $genero = 'Femenino';
         }
+
+        $res_id = null; 
 
 
         $infractor = new Infractor();
@@ -719,28 +709,71 @@ class OperativoController extends Controller{
         $infractor->save();
 
 
-        $infractorop = new Infractoresoperativo();
-        $infractorop->infractorId         = $infractor->id;
-        $infractorop->operativoId         = (int) $operativoId;
-        $infractorop->unidadSolicitanteId = $unidadSolicitante;
-        $infractorop->motivoId            = (int) $motivoId;
-        $infractorop->estatusId           = (int) $accionId;
-        $infractorop->provinciaId         = (int) $provinciaId;
-        $infractorop->distritoId          = (int) $distritoId;
-        $infractorop->corregimientoId     = (int) $corregimientoId;
-        $infractorop->direccion           = trim($lugarCaptacion);
-        $infractorop->fechacitacion       = $fechaCitacion;
 
-        if($accionId === '4'){
-            $infractorop->estatus         = 'Aprobado';
-        }else{
-            $infractorop->estatus         = 'Pendiente';
+        if(empty($operativoId)){
+
+            //return 'Hola'.$accionId;
+
+            $incidencia = new Infractoresincidencia();
+            $incidencia->infractorId          = $infractor->id;
+            $incidencia->incidencia_motivo_Id = (int) $motivoId;
+            $incidencia->incidencia_accion_Id = (int) $accionId;
+            $incidencia->provinciaId          = (int) $provinciaId;
+            $incidencia->distritoId           = (int) $distritoId;
+            $incidencia->corregimientoId      = (int) $corregimientoId;
+            $incidencia->direccion            = trim($lugarCaptacion);
+            $incidencia->fechacitacion        = $fechaCitacion;
+
+            if($accionId === '1'){
+                $incidencia->estatus         = 'Aprobado';
+            }else{
+                $incidencia->estatus         = 'Pendiente';
+            }
+
+            $incidencia->infoextra            = trim($comentario ?? '');
+            $incidencia->usuarioId            = $inspectorId;
+            $incidencia->save();
+
+            $res_id = $incidencia->id;
+
+        }else {
+
+            $operativo = DB::table('operativo')->where('id', $operativoId)->first();
+            if (!$operativo) {
+                throw new \RuntimeException('Operativo no encontrado.');
+            }
+
+            $unidadSolicitante = $operativo->unidaSolicitanteId ?? null;
+
+
+            $infractorop = new Infractoresoperativo();
+            $infractorop->infractorId         = $infractor->id;
+            $infractorop->operativoId         = (int) $operativoId;
+            $infractorop->unidadSolicitanteId = $unidadSolicitante;
+            $infractorop->motivoId            = (int) $motivoId;
+            $infractorop->estatusId           = (int) $accionId;
+            $infractorop->provinciaId         = (int) $provinciaId;
+            $infractorop->distritoId          = (int) $distritoId;
+            $infractorop->corregimientoId     = (int) $corregimientoId;
+            $infractorop->direccion           = trim($lugarCaptacion);
+            $infractorop->fechacitacion       = $fechaCitacion;
+
+            if($accionId === '4'){
+                $infractorop->estatus         = 'Aprobado';
+            }else{
+                $infractorop->estatus         = 'Pendiente';
+            }
+
+            $infractorop->infoextra           = trim($comentario ?? '');
+            $infractorop->usuarioId           = $inspectorId;
+            $infractorop->save();
+
+            $res_id = $infractorop->id;
+
+
         }
-        $infractorop->infoextra           = trim($comentario ?? '');
-        $infractorop->usuarioId           = $inspectorId;
-        $infractorop->save();
-
-        return response()->json($infractorop->id);
+        
+        return response()->json($res_id);
 
     }
 
