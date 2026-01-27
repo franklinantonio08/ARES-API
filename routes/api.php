@@ -55,7 +55,9 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
 
     
 
-    Route::post('/interop/BuscarRuex', [InteropController::class, 'BuscarRuex']);
+    Route::post('/interop/BuscarRuex', [InteropController::class, 'BuscarRegistro']);
+    Route::get('/interop/BuscarPais', [InteropController::class, 'BuscarPaises']);
+    Route::get('/interop/BuscarOcupacion', [InteropController::class, 'BuscarOcupaciones']);
 
 
     Route::post('/operativo/BuscarRuex', [OperativoController::class, 'BuscarRuex']);

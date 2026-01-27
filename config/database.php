@@ -91,6 +91,23 @@ return [
             'prefix_indexes' => true,
         ],
 
+        'sim_staging' => [
+            'driver' => 'sqlsrv',
+            'host' => env('DB3_HOST', 'localhost'),
+            'port' => env('DB3_PORT', '1433'),
+            'database' => env('DB3_DATABASE', 'SIM_STAGING'),
+            'Encrypt' => 'no',
+            'username' => env('DB3_USERNAME', 'bireporte'),
+            'password' => env('DB3_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+           // 'options' => [
+           //     'Encrypt' => 'yes',
+            //    'TrustServerCertificate' => 'yes',
+          //   ],
+        ],
+
        'datamind' => [
             'driver' => 'sqlsrv',
             'host' => env('DB2_HOST', 'localhost'),
