@@ -688,13 +688,19 @@ class OperativoController extends Controller{
 
         $res_id = null; 
 
+        $num_filiacion = null; 
+
         $ruex = RuexInfo::where('pasaporte', $pasaporte)
         ->where('primerNombre', $primerNombre)
         ->where('primerApellido', $primerApellido)
         ->where('fecha_nacimiento', $fechaNacimiento)
         ->first();
 
-        $num_filiacion = $ruex->num_filiacion;
+        if(!empty($ruex)){
+
+            $num_filiacion = $ruex->num_filiacion;
+
+        }       
 
         $infractor = new Infractor();
         $infractor->primerNombre    = trim($primerNombre);
@@ -702,7 +708,7 @@ class OperativoController extends Controller{
         $infractor->primerApellido  = trim($primerApellido);
         $infractor->segundoApellido = trim($segundoApellido ?? '');
         $infractor->codigo          = trim($num_filiacion ?? '');
-        $infractor->documento       = strtoupper(trim($pasaporte));
+        $infractor->documento       = strtoupper(trim($pasaporte ?? ''));
         $infractor->regionId        = $region;
         $infractor->paisId          = (int) $paisNacimiento;
         $infractor->nacionalidadId  = (int) $nacionalidad;
