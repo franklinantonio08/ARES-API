@@ -188,6 +188,23 @@ class OperativoController extends Controller{
         ->where('primerApellido', 'LIKE', '%' . $ruex->primerApellido . '%')
         ->get();      
 
+        $this->common->registrarConsultaValidacion(
+            $request,
+            'RUEX',
+            [
+                'num_filiacion'    => $num_filiacion,
+                'primerNombre'     => $ruex->primerNombre ?? null,
+                'primerApellido'   => $ruex->primerApellido ?? null,
+                'fecha_nacimiento' => $ruex->fecha_nacimiento ?? null,
+                'nacionalidad'     => $ruex->pais_nacionalidad ?? null,
+            ],
+            [
+                'num_filiacion' => $ruex->num_filiacion,
+                'pasaporte'     => $ruex->pasaporte,
+            ],
+            1
+        );
+
         return response()->json([
             'ruex' => $ruexInfoGeneral,
             'impedimientos' => $impedimientos,
@@ -475,6 +492,23 @@ class OperativoController extends Controller{
         ->where('primerApellido', 'LIKE', '%' . $primerApellido . '%')
         ->get();
 
+        $this->common->registrarConsultaValidacion(
+            $request,
+            'PASAPORTE',
+            [
+                'pasaporte'        => $pasaporte,
+                'primerNombre'     => $primerNombre,
+                'primerApellido'   => $primerApellido,
+                'fecha_nacimiento' => $fecha_fn,
+                'nacionalidad'     => $nacionalidad,
+            ],
+            $ruex->map(fn($r) => [
+                'num_filiacion' => $r->num_filiacion,
+                'pasaporte'     => $r->pasaporte,
+            ])->toArray(),
+            $ruex->count()
+        );
+
         return response()->json([
             'ruex' => $ruex,
             'impedimientos' => $impedimientos,          
@@ -566,6 +600,22 @@ class OperativoController extends Controller{
         ->where('primerNombre', 'LIKE', '%' . $primerNombre . '%')
         ->where('primerApellido', 'LIKE', '%' . $primerApellido . '%')
         ->get();
+
+        $this->common->registrarConsultaValidacion(
+            $request,
+            'CEDULA',
+            [
+                'cedula'           => $cedula,
+                'primerNombre'     => $primerNombre,
+                'primerApellido'   => $primerApellido,
+                'fecha_nacimiento' => $fecha_fn,
+                'nacionalidad'     => $nacionalidad,
+            ],
+            $ruex->map(fn($r) => [
+                'num_filiacion' => $r->num_filiacion,
+            ])->toArray(),
+            $ruex->count()
+        );
 
         return response()->json([
             'ruex' => $ruex,

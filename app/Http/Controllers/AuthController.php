@@ -12,9 +12,10 @@ use LdapRecord\Models\ActiveDirectory\User as LdapRecordUser;
 use LdapRecord\Container;
 use App\Models\LdapUser;
 use App\Helpers\CommonHelper;
+use App\Models\Logs;
 
-class AuthController extends Controller
-{
+class AuthController extends Controller {
+
     private $common;
 
     public function __construct(CommonHelper $common)
@@ -42,6 +43,13 @@ class AuthController extends Controller
             
         ]);
 
+        $this->saveLog(
+            $user->id,
+            'LOGIN_SUCCESS',
+            "Usuario {$user->username} inició sesión correctamente vía LDAP",
+            $request
+        );
+
         $token = $user->createToken('myapptoken')->plainTextToken;
 
         $response = [
@@ -68,13 +76,38 @@ class AuthController extends Controller
         $upn  = $username . '@migracion.gob.pa';
         $conn = Container::getConnection('default');
 
+        // if (!$conn->auth()->attempt($upn, $password)) {
+        //     return response(['message' => 'Credenciales inválidas (LDAP)'], 401);
+        // }
+
         if (!$conn->auth()->attempt($upn, $password)) {
+
+            $this->saveLog(
+                null,
+                'LOGIN_FAIL_LDAP',
+                "Intento fallido de login LDAP para el usuario {$username}",
+                $request
+            );
+
             return response(['message' => 'Credenciales inválidas (LDAP)'], 401);
         }
 
         // 3) Buscar el usuario en AD por sAMAccountName
         $ldapUser = LdapUser::where('samaccountname', $username)->first();
+
+        // if (!$ldapUser) {
+        //     return response(['message' => 'Usuario de Active Directory no encontrado.'], 404);
+        // }
+
         if (!$ldapUser) {
+
+            $this->saveLog(
+                null,
+                'LOGIN_FAIL_AD_NOT_FOUND',
+                "Usuario {$username} autenticó LDAP pero no existe en consulta AD",
+                $request
+            );
+
             return response(['message' => 'Usuario de Active Directory no encontrado.'], 404);
         }
 
@@ -109,14 +142,29 @@ class AuthController extends Controller
         $user->save();
 
         // 6) Verificar permiso 031 ANTES de crear token (sin depender de Auth::user)
+        // if (!$this->common->usuariopermiso('050', $user->id)) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => $this->common->message ?? 'Acceso no autorizado.',
+        //         'code'    => 'PERMISO_DENEGADO'
+        //     ], 403);
+        // }
+
         if (!$this->common->usuariopermiso('050', $user->id)) {
+
+            $this->saveLog(
+                $user->id,
+                'LOGIN_DENIED_PERMISO',
+                "Usuario {$user->username} autenticó pero no tiene permiso 050",
+                $request
+            );
+
             return response()->json([
                 'success' => false,
                 'message' => $this->common->message ?? 'Acceso no autorizado.',
                 'code'    => 'PERMISO_DENEGADO'
             ], 403);
         }
-
 
         // 7) Crear token Sanctum
         $token = $user->createToken('myapptoken')->plainTextToken;
@@ -130,9 +178,35 @@ class AuthController extends Controller
 
     public function logout (Request $request){
 
-        auth()->user()->tokens()->delete();
+        //auth()->user()->tokens()->delete();
+
+        //return ['message' => 'Logged out'];
+
+        $user = auth()->user();
+
+        $this->saveLog(
+            $user->id,
+            'LOGOUT',
+            "Usuario {$user->username} cerró sesión",
+            $request
+        );
+
+        $user->tokens()->delete();
 
         return ['message' => 'Logged out'];
 
+    }
+
+    private function saveLog($usuarioId, $action, $descripcion, $request) {
+
+         Logs::create([
+        'usuarioId'   => $usuarioId,
+        'action'      => $action,
+        'descripcion' => $descripcion,
+        'nombreTabla' => 'users',
+        'recordId'    => $usuarioId,
+        'ipAddress'   => $request->ip(),
+        'created_at'  => now()
+        ]);
     }
 }

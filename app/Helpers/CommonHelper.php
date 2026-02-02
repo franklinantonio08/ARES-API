@@ -5,6 +5,8 @@ namespace App\Helpers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB; 
+use App\Models\ConsultaValidacion;
+use Illuminate\Http\Request;
 
 class CommonHelper
 {
@@ -134,5 +136,50 @@ public function usuariopermiso(string $codigoPermiso, ?int $userId = null): bool
         }
         return $data;
     }
+
+        /**
+     * Registrar consultas de validación (RUEX / PASAPORTE / CEDULA)
+     */
+    public function registrarConsultaValidacion(
+        Request $request,
+        string $tipoConsulta,
+        array $busqueda,
+        array $resultado = [],
+        int $totalResultados = 0
+    ): void {
+
+        $userId = $request->user()->id ?? Auth::id();
+        if (!$userId) {
+            return; // seguridad: no registrar si no hay usuario
+        }
+
+        $normalize = fn($v) => is_string($v) ? trim(mb_strtoupper($v)) : $v;
+
+        ConsultaValidacion::create([
+            'usuario_id'       => $userId,
+            'tipo_consulta'    => strtoupper($tipoConsulta),
+
+            // Datos buscados (repetibles)
+            'num_filiacion' => $normalize($busqueda['num_filiacion'] ?? null),
+            'pasaporte'     => $normalize($busqueda['pasaporte'] ?? null),
+            'cedula'        => $normalize($busqueda['cedula'] ?? null),
+
+
+            'primerNombre'     => $busqueda['primerNombre'] ?? null,
+            'primerApellido'   => $busqueda['primerApellido'] ?? null,
+            'fecha_nacimiento' => $busqueda['fecha_nacimiento'] ?? null,
+            'nacionalidad'     => $busqueda['nacionalidad'] ?? null,
+
+            // Resultado
+            'encontrado'       => $totalResultados > 0 ? 1 : 0,
+            'total_resultados' => $totalResultados,
+            'datos_validados'  => !empty($resultado) ? $resultado : null,
+
+            // Contexto
+            'ip'               => $request->ip(),
+            'user_agent'       => substr((string) $request->userAgent(), 0, 255),
+        ]);
+    }
+
 
 }

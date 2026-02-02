@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Request;
 
 trait Loggable
 {
-    public static function bootLoggable()
-    {
+    public static function bootLoggable(){
+
         static::created(function ($model) {
             self::guardarLog('INSERT', $model);
         });
@@ -21,10 +21,11 @@ trait Loggable
         static::deleted(function ($model) {
             self::guardarLog('DELETE', $model);
         });
+        
     }
 
-    protected static function guardarLog($accion, $modelo)
-    {
+    protected static function guardarLog($accion, $modelo){
+
         DB::table('logs')->insert([
             'usuarioId'   => Auth::check() ? Auth::id() : null,
             'action'      => $accion,
@@ -35,10 +36,11 @@ trait Loggable
             'created_at'  => now(),
             'updated_at'  => now(),
         ]);
+
     }
 
-    public static function registrarManual($action, $descripcion, $nombreTabla, $recordId = null)
-    {
+    public static function registrarManual($action, $descripcion, $nombreTabla, $recordId = null){
+
         DB::table('logs')->insert([
             'usuarioId'   => Auth::check() ? Auth::id() : null,
             'action'      => $action,
@@ -49,5 +51,6 @@ trait Loggable
             'created_at'  => now(),
             'updated_at'  => now(),
         ]);
+
     }
 }
