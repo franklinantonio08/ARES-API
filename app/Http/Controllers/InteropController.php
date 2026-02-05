@@ -47,7 +47,7 @@ class InteropController extends Controller
             ], 401);
         }
 
-        if (!$this->common->usuariopermiso('050', $userId)) {
+        if (!$this->common->usuariopermiso('099', $userId)) {
             return response()->json([
                 'success' => false,
                 'message' => $this->common->message ?? 'Acceso no autorizado.',
@@ -187,7 +187,7 @@ class InteropController extends Controller
             ], 401);
         }
 
-        if (!$this->common->usuariopermiso('050', $userId)) {
+        if (!$this->common->usuariopermiso('099', $userId)) {
             return response()->json([
                 'success' => false,
                 'message' => $this->common->message ?? 'Acceso no autorizado.',
@@ -217,7 +217,7 @@ class InteropController extends Controller
             
         }
 
-        if (!$this->common->usuariopermiso('050', $userId)) {
+        if (!$this->common->usuariopermiso('099', $userId)) {
             return response()->json([
                 'success' => false,
                 'message' => $this->common->message ?? 'Acceso no autorizado.',

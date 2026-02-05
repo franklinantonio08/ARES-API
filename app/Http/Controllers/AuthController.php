@@ -62,8 +62,8 @@ class AuthController extends Controller {
 
     }
 
-    public function login(Request $request) {
-        // 1) Validación: SOLO username + password
+    public function login(Request $request){
+
         $fields = $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
@@ -72,46 +72,90 @@ class AuthController extends Controller {
         $username = $fields['username'];
         $password = $fields['password'];
 
-        // 2) Bind contra AD usando UPN
+        // 🔹 1) Buscar si el usuario ya existe en tu tabla
+        $localUser = User::where('username', $username)->first();
+
+        /**
+         * =========================================================
+         * 🔐 CASO 1 — USUARIO LOCAL (tipo_usuario = 2)
+         * =========================================================
+         */
+        if ($localUser && $localUser->tipo_usuario == 2) {
+
+            if (!\Hash::check($password, $localUser->password)) {
+
+                $this->saveLog(
+                    $localUser->id,
+                    'LOGIN_FAIL_LOCAL',
+                    "Intento fallido de login LOCAL para {$username}",
+                    $request
+                );
+
+                return response(['message' => 'Credenciales inválidas (LOCAL)'], 401);
+            }
+
+            // Verificar permiso antes del token
+            if (!$this->common->usuariopermiso('099', $localUser->id)) {
+
+                $this->saveLog(
+                    $localUser->id,
+                    'LOGIN_DENIED_PERMISO',
+                    "Usuario LOCAL {$username} no tiene permiso 099",
+                    $request
+                );
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Acceso no autorizado.',
+                    'code'    => 'PERMISO_DENEGADO'
+                ], 403);
+            }
+
+            $token = $localUser->createToken('myapptoken')->plainTextToken;
+
+            return response([
+                'user'  => $localUser,
+                'token' => $token,
+            ], 200);
+        }
+
+        /**
+         * =========================================================
+         * 🔐 CASO 2 — USUARIO AD (tipo_usuario = 1 o no existe aún)
+         * =========================================================
+         */
+
         $upn  = $username . '@migracion.gob.pa';
         $conn = Container::getConnection('default');
-
-        // if (!$conn->auth()->attempt($upn, $password)) {
-        //     return response(['message' => 'Credenciales inválidas (LDAP)'], 401);
-        // }
 
         if (!$conn->auth()->attempt($upn, $password)) {
 
             $this->saveLog(
                 null,
                 'LOGIN_FAIL_LDAP',
-                "Intento fallido de login LDAP para el usuario {$username}",
+                "Intento fallido de login LDAP para {$username}",
                 $request
             );
 
             return response(['message' => 'Credenciales inválidas (LDAP)'], 401);
         }
 
-        // 3) Buscar el usuario en AD por sAMAccountName
+        // Buscar en AD
         $ldapUser = LdapUser::where('samaccountname', $username)->first();
-
-        // if (!$ldapUser) {
-        //     return response(['message' => 'Usuario de Active Directory no encontrado.'], 404);
-        // }
 
         if (!$ldapUser) {
 
             $this->saveLog(
                 null,
                 'LOGIN_FAIL_AD_NOT_FOUND',
-                "Usuario {$username} autenticó LDAP pero no existe en consulta AD",
+                "Usuario {$username} autenticó LDAP pero no existe en AD",
                 $request
             );
 
             return response(['message' => 'Usuario de Active Directory no encontrado.'], 404);
         }
 
-        // 4) Atributos de AD
+        // Atributos AD
         $guid = $ldapUser->getConvertedGuid();
         $sam  = $ldapUser->getFirstAttribute('samaccountname');
         $cn   = $ldapUser->getFirstAttribute('cn');
@@ -120,60 +164,51 @@ class AuthController extends Controller {
         preg_match_all('/dc=([^,]+)/', $dn, $m);
         $domain = $m && isset($m[1]) ? implode('.', $m[1]) : 'migracion.gob.pa';
 
-        // 5) Resolver / sincronizar en `users` (preferencia: guid -> username)
+        // Sincronizar usuario
         $user = null;
         if ($guid)  $user = User::where('guid', $guid)->first();
         if (!$user) $user = User::where('username', $sam ?? $username)->first();
         if (!$user) $user = new User();
 
-        // Si tu tabla exige email NOT NULL/UNIQUE, generamos uno sintético estable
         $syntheticEmail = ($sam ?? $username) . '@' . $domain;
 
         $user->name         = $cn ?: ($sam ?? $username);
         $user->lastName     = $sn ?: ($user->lastName ?? null);
         $user->username     = $sam ?: $username;
-        $user->email        = $user->email ?: $syntheticEmail; // o quítalo si tu esquema lo permite nulo
+        $user->email        = $user->email ?: $syntheticEmail;
         $user->guid         = $guid ?: ($user->guid ?? null);
         $user->domain       = $domain;
         $user->estatus      = $user->estatus ?: 'Activo';
-        $user->tipo_usuario = $user->tipo_usuario ?: '1';
+        $user->tipo_usuario = 1; // 🔥 SIEMPRE AD
         if (empty($user->rolId)) $user->rolId = 11;
 
         $user->save();
-
-        // 6) Verificar permiso 031 ANTES de crear token (sin depender de Auth::user)
-        // if (!$this->common->usuariopermiso('050', $user->id)) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => $this->common->message ?? 'Acceso no autorizado.',
-        //         'code'    => 'PERMISO_DENEGADO'
-        //     ], 403);
-        // }
 
         if (!$this->common->usuariopermiso('050', $user->id)) {
 
             $this->saveLog(
                 $user->id,
                 'LOGIN_DENIED_PERMISO',
-                "Usuario {$user->username} autenticó pero no tiene permiso 050",
+                "Usuario AD {$username} no tiene permiso 050",
                 $request
             );
 
             return response()->json([
                 'success' => false,
-                'message' => $this->common->message ?? 'Acceso no autorizado.',
+                'message' => 'Acceso no autorizado.',
                 'code'    => 'PERMISO_DENEGADO'
             ], 403);
         }
 
-        // 7) Crear token Sanctum
         $token = $user->createToken('myapptoken')->plainTextToken;
 
         return response([
             'user'  => $user,
             'token' => $token,
         ], 200);
+
     }
+
 
 
     public function logout (Request $request){
