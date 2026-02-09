@@ -101,3 +101,11 @@ sudo systemctl enable httpd
 
 /* Ejecuta proyecto */
 php -S 172.20.10.81:8000 -t public
+
+
+
+sudo chown -R apache:apache /var/www/html/ARES-API/storage
+sudo chmod -R 775 /var/www/html/ARES-API/storage
+
+sudo chown -R apache:apache /var/www/html/ARES-API/bootstrap/cache
+sudo chmod -R 775 /var/www/html/ARES-API/bootstrap/cache

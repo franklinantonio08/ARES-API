@@ -926,7 +926,7 @@ class OperativoController extends Controller{
             $infractorop->direccion           = trim($lugarCaptacion);
             $infractorop->fechacitacion       = $fechaCitacion;
 
-            // OJO: aquí uso $accionId en vez de $this->request->estatus
+            // OJO: aquí uso $accionId en vez de $request->estatus
             if ($accionId === '4') {
                 $infractorop->estatus = 'Aprobado';
             } else {
@@ -959,11 +959,11 @@ class OperativoController extends Controller{
     }
 
     
-    public function Estadistica(){
+    public function Estadistica(Request $request){
         // =========================
         // 1. Usuario autenticado
         // =========================
-        $userId = $this->request->user()->id ?? Auth::id();
+        $userId = $request->user()->id ?? Auth::id();
 
         if (!$userId) {
             return response()->json([
