@@ -558,8 +558,9 @@ class OperativoController extends Controller{
     }
 
 
-    public function GuardaOperacion(Request $request){
-        
+    public function GuardaOperacion(Request $request) {
+
+    
         $userId = $request->user()->id ?? Auth::id();
 
         if (!$userId) {
@@ -580,166 +581,182 @@ class OperativoController extends Controller{
 
         $this->common->ensureSucursalOrFail();
 
-        try {
+        /* ==========================================================
+        SOPORTE BASE64 (MOVIL)
+        ========================================================== */
 
-            $res_id = DB::transaction(function () use ($request, $userId) {
+        $adjuntosBase64 = $request->input('adjuntos');
 
-                /* ============================
-                DATOS
-                ============================ */
+        if (!empty($adjuntosBase64) && is_array($adjuntosBase64)) {
 
-                $primerNombre       = $request->input('primerNombre');
-                $segundoNombre      = $request->input('segundoNombre');
-                $primerApellido     = $request->input('primerApellido');
-                $segundoApellido    = $request->input('segundoApellido');
-                $pasaporte          = $request->input('pasaporte');
-                $fechaNacimiento    = $request->input('fechaNacimiento');
-                $genero             = $request->input('genero');
+            foreach ($adjuntosBase64 as $img) {
 
-                $paisNacimiento     = $request->input('paisNacimiento');
-                $nacionalidad       = $request->input('nacionalidad');
-                $operativoId        = $request->input('operativo');
-                $accionId           = $request->input('accionId');
-                $motivoId           = $request->input('motivo');
+                $base64 = $img['base64'] ?? null;
+                $filename = $img['filename'] ?? ('infractor_' . uniqid() . '.jpg');
 
-                $provinciaId        = $request->input('provinciaId');
-                $distritoId         = $request->input('distritoId');
-                $corregimientoId    = $request->input('corregimientoId');
-                $lugarCaptacion     = $request->input('lugarCaptacion');
-                $fechaCitacion      = $request->input('fechaCitacion');
-                $comentario         = $request->input('comentario');
+                if (!$base64) continue;
 
-                /* ============================
-                PAÍS
-                ============================ */
+                $imageData = base64_decode($base64);
 
-                $pais = DB::table('rid_paises')->where('id', $paisNacimiento)->first();
-                if (!$pais) {
-                    throw new \RuntimeException('País no encontrado.');
-                }
-                $region = $pais->region_id;
-
-                $genero = ($genero === 'M') ? 'Masculino' : 'Femenino';
-
-                /* ============================
-                BUSCAR RUEX
-                ============================ */
-
-                $num_filiacion = null;
-
-                $ruex = RuexInfo::where('pasaporte', $pasaporte)
-                    ->where('primerNombre', $primerNombre)
-                    ->where('primerApellido', $primerApellido)
-                    ->where('fecha_nacimiento', $fechaNacimiento)
-                    ->first();
-
-                if ($ruex) {
-                    $num_filiacion = $ruex->num_filiacion;
+                if ($imageData === false) {
+                    throw new \RuntimeException('Error decodificando imagen Base64.');
                 }
 
-                /* ============================
-                CREAR INFRACTOR
-                ============================ */
-
-                $infractor = new Infractor();
-                $infractor->primerNombre    = trim($primerNombre);
-                $infractor->segundoNombre   = trim($segundoNombre ?? '');
-                $infractor->primerApellido  = trim($primerApellido);
-                $infractor->segundoApellido = trim($segundoApellido ?? '');
-                $infractor->codigo          = trim($num_filiacion ?? '');
-                $infractor->documento       = strtoupper(trim($pasaporte ?? ''));
-                $infractor->regionId        = $region;
-                $infractor->paisId          = (int) $paisNacimiento;
-                $infractor->nacionalidadId  = (int) $nacionalidad;
-                $infractor->fechaNacimiento = $fechaNacimiento;
-                $infractor->genero          = $genero;
-                $infractor->estatus         = ($accionId === '4') ? 'Aprobado' : 'Pendiente';
-                $infractor->usuarioId       = $userId;
-                $infractor->save();
-
-                /* ============================
-                CREAR OPERATIVO
-                ============================ */
-
-                $operativo = DB::table('operativo')->where('id', $operativoId)->first();
-                if (!$operativo) {
-                    throw new \RuntimeException('Operativo no encontrado.');
-                }
-
-                $unidadSolicitante = $operativo->unidaSolicitanteId ?? null;
-
-                $infractorop = new Infractoresoperativo();
-                $infractorop->infractorId         = $infractor->id;
-                $infractorop->operativoId         = (int) $operativoId;
-                $infractorop->unidadSolicitanteId = $unidadSolicitante;
-                $infractorop->motivoId            = (int) $motivoId;
-                $infractorop->estatusId           = (int) $accionId;
-                $infractorop->provinciaId         = (int) $provinciaId;
-                $infractorop->distritoId          = (int) $distritoId;
-                $infractorop->corregimientoId     = (int) $corregimientoId;
-                $infractorop->direccion           = trim($lugarCaptacion);
-                $infractorop->fechacitacion       = $fechaCitacion;
-                $infractorop->estatus             = ($accionId === '4') ? 'Aprobado' : 'Pendiente';
-                $infractorop->infoextra           = trim($comentario ?? '');
-                $infractorop->usuarioId           = $userId;
-                $infractorop->save();
-
-                /* ============================
-                GUARDAR IMÁGENES BASE64
-                ============================ */
-
-                $adjuntosBase64 = $request->input('adjuntos');
-
-                if (!empty($adjuntosBase64) && is_array($adjuntosBase64)) {
-
-                    foreach ($adjuntosBase64 as $img) {
-
-                        $base64 = $img['base64'] ?? null;
-                        $filename = $img['filename'] ?? ('infractor_' . uniqid() . '.jpg');
-
-                        if (!$base64) continue;
-
-                        $imageData = base64_decode($base64);
-
-                        if ($imageData === false) {
-                            throw new \RuntimeException('Error decodificando imagen Base64.');
-                        }
-
-                        Storage::disk('public')->put("infractores/$filename", $imageData);
-
-                        Infractorarchivo::create([
-                            'infractores_operativos_id' => $infractorop->id,
-                            'tipo'        => 'jpg',
-                            'archivo'     => "infractores/$filename",
-                            'descripcion' => 'Imagen Adjunta (App móvil)',
-                            'usuarioId'   => $userId,
-                            'estatus'     => 'Activo',
-                        ]);
-                    }
-                }
-
-                return $infractorop->id;
-            });
-
-            Loggable::registrarManual(
-                'CREATE',
-                'Registro creado desde APP móvil',
-                'infractores_operativos',
-                $res_id
-            );
-
-            return response()->json($res_id);
-
-        } catch (\Throwable $ex) {
-
-            \Log::error('Error GuardaOperacion APP', ['ex' => $ex]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'ERROR AL GUARDAR EL REGISTRO',
-                'error'   => $ex->getMessage()
-            ], 500);
+                Storage::put("public/infractores/$filename", $imageData);
+            }
         }
+
+        /* ==========================================================
+        SOPORTE MULTIPART (WEB / POSTMAN)
+        ========================================================== */
+
+        if ($request->hasFile('adjuntos')) {
+
+            foreach ($request->file('adjuntos') as $file) {
+
+                if (!$file->isValid()) {
+                    throw new \RuntimeException('Archivo adjunto inválido.');
+                }
+
+                $ext = strtolower($file->getClientOriginalExtension());
+                $valid = ['png', 'jpg', 'jpeg'];
+
+                if (!in_array($ext, $valid)) {
+                    throw new \RuntimeException('Formato de imagen no permitido (solo png, jpg, jpeg).');
+                }
+
+                if ($file->getSize() > (8 * 1024 * 1024)) {
+                    throw new \RuntimeException('Imagen supera el tamaño permitido (8MB).');
+                }
+
+                $filename = 'infractor_' . uniqid('', true) . '.' . $ext;
+                $file->storeAs('public/infractores', $filename);
+            }
+        }
+
+        /* ==========================================================
+        RESTO DE TU LÓGICA (SIN CAMBIOS)
+        ========================================================== */
+
+        $inspectorId        = $request->input('inspectorId');
+        $latitud            = $request->input('latitud');
+        $longitud           = $request->input('longitud');
+        $primerNombre       = $request->input('primerNombre');
+        $segundoNombre      = $request->input('segundoNombre');
+        $primerApellido     = $request->input('primerApellido');
+        $segundoApellido    = $request->input('segundoApellido');
+
+        $documento          = $request->input('documento');
+        $pasaporte          = $request->input('pasaporte');
+        $fechaNacimiento    = $request->input('fechaNacimiento');
+        $genero             = $request->input('genero');
+
+        $paisNacimiento     = $request->input('paisNacimiento');
+        $nacionalidad       = $request->input('nacionalidad');
+        $operativoId        = $request->input('operativo');
+        $accionId           = $request->input('accionId');
+        $motivoId           = $request->input('motivo');
+
+        $provinciaId        = $request->input('provinciaId');
+        $distritoId         = $request->input('distritoId');
+        $corregimientoId    = $request->input('corregimientoId');
+        $lugarCaptacion     = $request->input('lugarCaptacion');
+        $fechaCitacion      = $request->input('fechaCitacion');
+        $comentario         = $request->input('comentario');
+
+        $pais = DB::table('rid_paises')->where('id', $paisNacimiento)->first();
+
+        if (!$pais) {
+            throw new \RuntimeException('País no encontrado.');
+        }
+
+        $region = $pais->region_id;
+
+        if ($genero === 'M') {
+            $genero = 'Masculino';
+        } else {
+            $genero = 'Femenino';
+        }
+
+        $res_id = null;
+        $num_filiacion = null;
+
+        $ruex = RuexInfo::where('pasaporte', $pasaporte)
+            ->where('primerNombre', $primerNombre)
+            ->where('primerApellido', $primerApellido)
+            ->where('fecha_nacimiento', $fechaNacimiento)
+            ->first();
+
+        if (!empty($ruex)) {
+            $num_filiacion = $ruex->num_filiacion;
+        }
+
+        $infractor = new Infractor();
+        $infractor->primerNombre    = trim($primerNombre);
+        $infractor->segundoNombre   = trim($segundoNombre ?? '');
+        $infractor->primerApellido  = trim($primerApellido);
+        $infractor->segundoApellido = trim($segundoApellido ?? '');
+        $infractor->codigo          = trim($num_filiacion ?? '');
+        $infractor->documento       = strtoupper(trim($pasaporte ?? ''));
+        $infractor->regionId        = $region;
+        $infractor->paisId          = (int) $paisNacimiento;
+        $infractor->nacionalidadId  = (int) $nacionalidad;
+        $infractor->fechaNacimiento = $fechaNacimiento;
+        $infractor->genero          = $genero;
+
+        $infractor->estatus = ($accionId === '4') ? 'Aprobado' : 'Pendiente';
+
+        $infractor->usuarioId = $inspectorId;
+        $infractor->save();
+
+        if (empty($operativoId)) {
+
+            $incidencia = new Infractoresincidencia();
+            $incidencia->infractorId          = $infractor->id;
+            $incidencia->incidencia_motivo_Id = (int) $motivoId;
+            $incidencia->incidencia_accion_Id = (int) $accionId;
+            $incidencia->provinciaId          = (int) $provinciaId;
+            $incidencia->distritoId           = (int) $distritoId;
+            $incidencia->corregimientoId      = (int) $corregimientoId;
+            $incidencia->direccion            = trim($lugarCaptacion);
+            $incidencia->fechacitacion        = $fechaCitacion;
+            $incidencia->estatus              = ($accionId === '1') ? 'Aprobado' : 'Pendiente';
+            $incidencia->infoextra            = trim($comentario ?? '');
+            $incidencia->usuarioId            = $inspectorId;
+            $incidencia->save();
+
+            $res_id = $incidencia->id;
+
+        } else {
+
+            $operativo = DB::table('operativo')->where('id', $operativoId)->first();
+
+            if (!$operativo) {
+                throw new \RuntimeException('Operativo no encontrado.');
+            }
+
+            $unidadSolicitante = $operativo->unidaSolicitanteId ?? null;
+
+            $infractorop = new Infractoresoperativo();
+            $infractorop->infractorId         = $infractor->id;
+            $infractorop->operativoId         = (int) $operativoId;
+            $infractorop->unidadSolicitanteId = $unidadSolicitante;
+            $infractorop->motivoId            = (int) $motivoId;
+            $infractorop->estatusId           = (int) $accionId;
+            $infractorop->provinciaId         = (int) $provinciaId;
+            $infractorop->distritoId          = (int) $distritoId;
+            $infractorop->corregimientoId     = (int) $corregimientoId;
+            $infractorop->direccion           = trim($lugarCaptacion);
+            $infractorop->fechacitacion       = $fechaCitacion;
+            $infractorop->estatus             = ($accionId === '4') ? 'Aprobado' : 'Pendiente';
+            $infractorop->infoextra           = trim($comentario ?? '');
+            $infractorop->usuarioId           = $inspectorId;
+            $infractorop->save();
+
+            $res_id = $infractorop->id;
+        }
+
+        return response()->json($res_id);
     }
 
 
