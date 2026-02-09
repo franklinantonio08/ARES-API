@@ -22,6 +22,9 @@ use App\Models\MotivosInc;
 use App\Models\Infractor;
 use App\Models\Infractoresoperativo;
 
+use App\Models\Infractorarchivo;
+use App\Models\Infractorincidenciaarchivo;
+
 use App\Helpers\FotoHelper;
 use App\Helpers\CommonHelper;
 use App\Traits\Loggable;
@@ -32,6 +35,8 @@ use Illuminate\Support\Str;
 use DB;
 use Excel;
 use Carbon\Carbon;
+
+
 
 
 class OperativoController extends Controller{
