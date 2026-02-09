@@ -560,6 +560,7 @@ class OperativoController extends Controller{
 
     public function GuardaOperacion(Request $request) {
 
+    
         $userId = $request->user()->id ?? Auth::id();
 
         if (!$userId) {
@@ -580,23 +581,34 @@ class OperativoController extends Controller{
 
         $this->common->ensureSucursalOrFail();
 
-        // $datos = $request->all();
+        /* ==========================================================
+        SOPORTE BASE64 (MOVIL)
+        ========================================================== */
 
-        // return $datos;
+        $adjuntosBase64 = $request->input('adjuntos');
 
-        // return response()->json([
-        //     'original' => $request->file('adjuntos')[0]->getClientOriginalName(),
-        //     'temp' => $request->file('adjuntos')[0]->getRealPath(),
-        //     'size' => $request->file('adjuntos')[0]->getSize(),
-        // ]);
+        if (!empty($adjuntosBase64) && is_array($adjuntosBase64)) {
 
+            foreach ($adjuntosBase64 as $img) {
 
-        // return response()->json([
-        //     'hasFile' => $request->hasFile('adjuntos'),
-        //     'files' => $request->file('adjuntos'),
-        //     'all' => $request->all()
-        // ]);
+                $base64 = $img['base64'] ?? null;
+                $filename = $img['filename'] ?? ('infractor_' . uniqid() . '.jpg');
 
+                if (!$base64) continue;
+
+                $imageData = base64_decode($base64);
+
+                if ($imageData === false) {
+                    throw new \RuntimeException('Error decodificando imagen Base64.');
+                }
+
+                Storage::put("public/infractores/$filename", $imageData);
+            }
+        }
+
+        /* ==========================================================
+        SOPORTE MULTIPART (WEB / POSTMAN)
+        ========================================================== */
 
         if ($request->hasFile('adjuntos')) {
 
@@ -618,16 +630,15 @@ class OperativoController extends Controller{
                 }
 
                 $filename = 'infractor_' . uniqid('', true) . '.' . $ext;
-
-                // Guarda en storage/app/public/infractores
                 $file->storeAs('public/infractores', $filename);
             }
         }
 
+        /* ==========================================================
+        RESTO DE TU LÓGICA (SIN CAMBIOS)
+        ========================================================== */
 
-        // $pasaporte      = $request->input('fecha');
         $inspectorId        = $request->input('inspectorId');
-
         $latitud            = $request->input('latitud');
         $longitud           = $request->input('longitud');
         $primerNombre       = $request->input('primerNombre');
@@ -658,33 +669,27 @@ class OperativoController extends Controller{
         if (!$pais) {
             throw new \RuntimeException('País no encontrado.');
         }
+
         $region = $pais->region_id;
 
-       
-
-
-
-        if($genero === 'M'){
+        if ($genero === 'M') {
             $genero = 'Masculino';
-        }else{
+        } else {
             $genero = 'Femenino';
         }
 
-        $res_id = null; 
-
-        $num_filiacion = null; 
+        $res_id = null;
+        $num_filiacion = null;
 
         $ruex = RuexInfo::where('pasaporte', $pasaporte)
-        ->where('primerNombre', $primerNombre)
-        ->where('primerApellido', $primerApellido)
-        ->where('fecha_nacimiento', $fechaNacimiento)
-        ->first();
+            ->where('primerNombre', $primerNombre)
+            ->where('primerApellido', $primerApellido)
+            ->where('fecha_nacimiento', $fechaNacimiento)
+            ->first();
 
-        if(!empty($ruex)){
-
+        if (!empty($ruex)) {
             $num_filiacion = $ruex->num_filiacion;
-
-        }       
+        }
 
         $infractor = new Infractor();
         $infractor->primerNombre    = trim($primerNombre);
@@ -696,23 +701,15 @@ class OperativoController extends Controller{
         $infractor->regionId        = $region;
         $infractor->paisId          = (int) $paisNacimiento;
         $infractor->nacionalidadId  = (int) $nacionalidad;
-        $infractor->fechaNacimiento = $fechaNacimiento; 
+        $infractor->fechaNacimiento = $fechaNacimiento;
         $infractor->genero          = $genero;
 
-        if($accionId === '4'){
-            $infractor->estatus         = 'Aprobado';
-        }else{
-            $infractor->estatus         = 'Pendiente';
-        }
+        $infractor->estatus = ($accionId === '4') ? 'Aprobado' : 'Pendiente';
 
-        $infractor->usuarioId       = $inspectorId;
+        $infractor->usuarioId = $inspectorId;
         $infractor->save();
 
-
-
-        if(empty($operativoId)){
-
-            //return 'Hola'.$accionId;
+        if (empty($operativoId)) {
 
             $incidencia = new Infractoresincidencia();
             $incidencia->infractorId          = $infractor->id;
@@ -723,28 +720,22 @@ class OperativoController extends Controller{
             $incidencia->corregimientoId      = (int) $corregimientoId;
             $incidencia->direccion            = trim($lugarCaptacion);
             $incidencia->fechacitacion        = $fechaCitacion;
-
-            if($accionId === '1'){
-                $incidencia->estatus         = 'Aprobado';
-            }else{
-                $incidencia->estatus         = 'Pendiente';
-            }
-
+            $incidencia->estatus              = ($accionId === '1') ? 'Aprobado' : 'Pendiente';
             $incidencia->infoextra            = trim($comentario ?? '');
             $incidencia->usuarioId            = $inspectorId;
             $incidencia->save();
 
             $res_id = $incidencia->id;
 
-        }else {
+        } else {
 
             $operativo = DB::table('operativo')->where('id', $operativoId)->first();
+
             if (!$operativo) {
                 throw new \RuntimeException('Operativo no encontrado.');
             }
 
             $unidadSolicitante = $operativo->unidaSolicitanteId ?? null;
-
 
             $infractorop = new Infractoresoperativo();
             $infractorop->infractorId         = $infractor->id;
@@ -757,25 +748,17 @@ class OperativoController extends Controller{
             $infractorop->corregimientoId     = (int) $corregimientoId;
             $infractorop->direccion           = trim($lugarCaptacion);
             $infractorop->fechacitacion       = $fechaCitacion;
-
-            if($accionId === '4'){
-                $infractorop->estatus         = 'Aprobado';
-            }else{
-                $infractorop->estatus         = 'Pendiente';
-            }
-
+            $infractorop->estatus             = ($accionId === '4') ? 'Aprobado' : 'Pendiente';
             $infractorop->infoextra           = trim($comentario ?? '');
             $infractorop->usuarioId           = $inspectorId;
             $infractorop->save();
 
             $res_id = $infractorop->id;
-
-
         }
-        
-        return response()->json($res_id);
 
+        return response()->json($res_id);
     }
+
 
 
     public function ActualizaOperacion(Request $request, $id)
