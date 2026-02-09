@@ -778,7 +778,7 @@ class OperativoController extends Controller{
 
 
     public function GuardaOperacion(Request $request){
-        
+
         $userId = $request->user()->id ?? Auth::id();
 
         if (!$userId) {
@@ -1068,12 +1068,9 @@ class OperativoController extends Controller{
                 ];
             });
 
-            return response()->json([
-                'success' => true,
-                'tipo'    => $result['tipo'],
-                'id'      => $result['id'],
-            ], 200);
+            return response()->json($result['id']);
 
+            
         } catch (\Throwable $e) {
 
             \Log::error('Error GuardaOperacion', ['ex' => $e]);
