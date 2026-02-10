@@ -12,7 +12,7 @@ class Infractorincidenciaarchivo extends Model
     protected $table = 'infractores_incidencias_archivos';
 
      protected $fillable = [
-        'infractores_operativos_id',
+        'infractores_incidencias_id',
         'tipo',
         'archivo',
         'descripcion',
