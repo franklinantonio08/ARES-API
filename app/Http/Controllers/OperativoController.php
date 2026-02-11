@@ -74,6 +74,15 @@ class OperativoController extends Controller{
         $ruex = RuexInfo::where('num_filiacion', $num_filiacion)->first();
         if (!$ruex) return null;
 
+
+        $nacionalidad = Pais::orderBy('pais', 'asc')
+            ->where('cod_pais', '=', $title($ruex->cod_pais_nacionalidad))
+            ->first();
+
+        $pais_nacimiento = Pais::orderBy('pais', 'asc')
+            ->where('cod_pais', '=', $title($ruex->cod_pais_nacimiento))
+            ->first();
+
         $ruexInfoGeneral = [
             'num_filiacion'     => (string) $ruex->num_filiacion,
             'primerNombre'      => $title($ruex->primerNombre),
@@ -84,8 +93,10 @@ class OperativoController extends Controller{
             'genero'            => $mapGenero($ruex->genero),
             'pasaporte'         => $upper($ruex->pasaporte),
             'fecha_nacimiento'  => $fmtFecha($ruex->fecha_nacimiento),
-            'pais_nacionalidad' => $title($ruex->pais_nacionalidad),
-            'pais_nacimiento'   => $title($ruex->pais_nacimiento),
+            'cod_pais_nacionalidad'   => $title($ruex->cod_pais_nacionalidad),
+            'pais_nacionalidad' => $nacionalidad->nacionalidad,
+            'cod_pais_nacimiento' => $title($ruex->cod_pais_nacimiento),
+            'pais_nacimiento'   => $nacionalidad->pais,
             'direccion'         => $title($ruex->direccion_panama),
         ];
 
@@ -139,7 +150,6 @@ class OperativoController extends Controller{
             'foto'          => $fotoPerfilUrl,
         ];
     }
-
 
 
     public function BuscarRuex(Request $request) {
