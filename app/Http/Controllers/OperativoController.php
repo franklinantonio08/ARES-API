@@ -1334,7 +1334,7 @@ class OperativoController extends Controller{
             ->get()
             ->map(function ($io) {
                 return [
-                    'id'           => $io->id,
+                    'id'           => $io->infractor->id,
                     'tipo'         => 'OPERATIVO',
 
                     'nombre'       => trim(($io->infractor->primerNombre ?? '') . ' ' . ($io->infractor->primerApellido ?? '')),
@@ -1370,7 +1370,7 @@ class OperativoController extends Controller{
             ->get()
             ->map(function ($ii) {
                 return [
-                    'id'           => $ii->id,
+                    'id'           => $ii->infractor->id,
                     'tipo'         => 'INCIDENCIA',
 
                     'nombre'       => trim(($ii->infractor->primerNombre ?? '') . ' ' . ($ii->infractor->primerApellido ?? '')),
