@@ -53,7 +53,8 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::post('/accesorios', [VehiculoController::class, 'ListaAccesorios']);
     Route::post('/inspeccion', [VehiculoController::class, 'GuardaInspeccion']);
 
-    
+    Route::post('/VisaZL/Solicitud', [InteropController::class, 'GuardarSolicitud']);
+    Route::post('/VisaZL/SolicitudArchivos', [InteropController::class, 'GuardarSolicitudArchivos']);
 
     Route::post('/interop/BuscarRuex', [InteropController::class, 'BuscarRegistro']);
     Route::get('/interop/BuscarPais', [InteropController::class, 'BuscarPaises']);
@@ -72,7 +73,7 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::post('/operativo/BuscarCorregimiento', [OperativoController::class, 'BuscarCorregimiento']);
     Route::post('/operativo/GuardaOperacion', [OperativoController::class, 'GuardaOperacion']);  
     Route::post('/operativo/EditarOperacion/{id}', [OperativoController::class, 'EditarOperacion']);  
-    Route::put('/operativo/ActualizaOperacion/{id}', [OperativoController::class, 'ActualizaOperacion']);  
+    Route::post('/operativo/ActualizaOperacion', [OperativoController::class, 'ActualizaOperacion']);  
 
     Route::post('/operativo/BuscarAccionesInc', [OperativoController::class, 'BuscarAccionesInc']);
     Route::post('/operativo/BuscarMotivoInc', [OperativoController::class, 'BuscarMotivoInc']);

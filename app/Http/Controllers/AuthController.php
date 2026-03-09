@@ -158,7 +158,7 @@ class AuthController extends Controller {
         // Atributos AD
         $guid = $ldapUser->getConvertedGuid();
         $sam  = $ldapUser->getFirstAttribute('samaccountname');
-        $cn   = $ldapUser->getFirstAttribute('cn');
+        $cn   = $ldapUser->getFirstAttribute('givenName');
         $sn   = $ldapUser->getFirstAttribute('sn');
         $dn   = strtolower($ldapUser->getDn() ?? '');
         preg_match_all('/dc=([^,]+)/', $dn, $m);
@@ -166,8 +166,21 @@ class AuthController extends Controller {
 
         // Sincronizar usuario
         $user = null;
-        if ($guid)  $user = User::where('guid', $guid)->first();
-        if (!$user) $user = User::where('username', $sam ?? $username)->first();
+
+        if ($guid)  $user = User::where('guid', $guid)
+            ->leftJoin('sucursal', 'sucursal.id', '=', 'users.sucursalId')
+            ->select(
+                'users.*',
+                'sucursal.descripcion as sucursal',
+                )
+            ->first();
+        if (!$user) $user = User::where('username', $sam ?? $username)
+            ->leftJoin('sucursal', 'sucursal.id', '=', 'users.sucursalId')
+           ->select(
+                'users.*',
+                'sucursal.descripcion as sucursal',
+                )
+            ->first();
         if (!$user) $user = new User();
 
         $syntheticEmail = ($sam ?? $username) . '@' . $domain;

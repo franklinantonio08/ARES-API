@@ -43,7 +43,9 @@ class VehiculoController extends Controller
 
     public function ListaAccesorios() {
 
-        return Accesorio::select('id', 'nombre_accesorio')->where('activo', 1)->get();
+        return Accesorio::select('id', 'nombre_accesorio')
+        ->where('estatus', 'Activo')
+        ->get();
 
     }
 

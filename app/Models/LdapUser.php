@@ -25,7 +25,7 @@ class LdapUser extends BaseLdapUser{
         
         // Campos adicionales específicos de tu aplicación
         $user->departamentoId = $this->getDepartmentId();
-        $user->tipo_usuario = 'UsuarioSNM';
+        $user->tipo_usuario = 1;
         $user->estatus = 'Activo';
         
         $user->save();
