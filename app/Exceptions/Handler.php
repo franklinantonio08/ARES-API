@@ -34,4 +34,18 @@ class Handler extends ExceptionHandler
     {
         //
     }
+
+
+    /*Quitar en caso de que quieras mostrar errores*/
+    public function render($request, Throwable $exception){
+
+        if ($request->is('api/*')) {
+            return response()->json([
+                'status' => 'restricted',
+                'message' => 'Acceso restringido. Servicio protegido.'
+            ], 403);
+        }
+
+        return parent::render($request, $exception);
+    }
 }

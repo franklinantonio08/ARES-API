@@ -86,3 +86,10 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::fallback(function () {
+    return response()->json([
+        'status'  => 'restricted',
+        'message' => 'Acceso restringido. Servicio protegido.'
+    ], 403);
+});

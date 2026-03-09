@@ -17,6 +17,9 @@ chmod 600 .env
 chown apache:apache .env  
 
 mkdir -p /var/www/html/ARES-API/storage/app/public/infractores
+mkdir -p /var/www/html/ARES-API/storage/app/public/fotos_perfil
+mkdir -p /var/www/html/ARES-API/storage/app/public/incidencias
+mkdir -p /var/www/html/ARES-API/storage/app/public/visaszonalibre
 
 /* Permisos al storage*/
 sudo chown -R apache:apache /var/www/html/ARES-API/storage/
