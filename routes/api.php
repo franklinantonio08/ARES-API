@@ -48,10 +48,11 @@ Route::group(['middleware'=>['auth:sanctum']], function () {
     Route::post('/denuncias/migrateData', [DenunciasController::class, 'migrateData']);
     Route::post('/denuncias/migrateDataFamilia', [DenunciasController::class, 'migrateDataFamilia']);    
 
-    Route::post('/vehiculos', [VehiculoController::class, 'ListaVehiculos']);
-    Route::post('/BuscarVehiculos', [VehiculoController::class, 'BuscarVehiculos']);
-    Route::post('/accesorios', [VehiculoController::class, 'ListaAccesorios']);
-    Route::post('/inspeccion', [VehiculoController::class, 'GuardaInspeccion']);
+    Route::post('/transporte/vehiculos', [VehiculoController::class, 'ListaVehiculos']);
+    Route::post('/transporte/BuscarVehiculos', [VehiculoController::class, 'BuscarVehiculos']);
+    Route::post('/transporte/accesorios', [VehiculoController::class, 'ListaAccesorios']);
+    Route::post('/transporte/inspeccion', [VehiculoController::class, 'GuardaInspeccion']);
+    Route::post('/transporte/Estadistica', [VehiculoController::class, 'Estadistica']);
 
     Route::post('/VisaZL/Solicitud', [InteropController::class, 'GuardarSolicitud']);
     Route::post('/VisaZL/SolicitudArchivos', [InteropController::class, 'GuardarSolicitudArchivos']);
